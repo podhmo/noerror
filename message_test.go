@@ -9,14 +9,14 @@ import (
 
 func TestMessageFormat(t *testing.T) {
 	t.Run("default", func(t *testing.T) {
-		got := Message(t, Equal(10).Expected(11))
+		got := Message(t, Equal(11).Actual(10))
 		want := `Equal, expected 11, but actual 10`
 		if got != want {
 			t.Errorf("expected %q, but actual %q", want, got)
 		}
 	})
 	t.Run("describe", func(t *testing.T) {
-		got := Message(t, Equal(10).Expected(11).Describe("*it*"))
+		got := Message(t, Equal(11).Actual(10).Describe("*it*"))
 		want := `*it*, expected 11, but actual 10`
 		if got != want {
 			t.Errorf("expected %q, but actual %q", want, got)
@@ -24,7 +24,7 @@ func TestMessageFormat(t *testing.T) {
 	})
 	t.Run("with ToDescription", func(t *testing.T) {
 		got := Message(t,
-			Equal(10).Expected(11),
+			Equal(11).Actual(10),
 			WithDescriptionFunction(func(r *Reporter, ng *NG) string {
 				fmtText := "%s, want %s, but got %s"
 				toString := DefaultReporter.ToString
@@ -49,7 +49,7 @@ func TestMessageFormat(t *testing.T) {
 			},
 		}
 
-		got := Message(t, Equal(10).Expected(10).Epilog(dummy))
+		got := Message(t, Equal(10).Actual(10).Epilog(dummy))
 		want := ``
 		if got != want {
 			t.Errorf("expected %q, but actual %q", want, got)
@@ -62,7 +62,7 @@ func TestMessageFormat(t *testing.T) {
 			},
 		}
 
-		got := Message(t, Equal(10).Expected(11).Epilog(dummy))
+		got := Message(t, Equal(11).Actual(10).Epilog(dummy))
 		want := "Equal, expected 11, but actual 10\n:bomb:"
 		if got != want {
 			t.Errorf("expected %q, but actual %q", want, got)
