@@ -191,7 +191,7 @@ func (h *Handy) Expected(expected interface{}) *NG {
 }
 
 // Require no error, must not be error, if error is occured, reported by t.Fatal()
-func Require(t *testing.T, err error, options ...func(*Reporter)) {
+func Require(t testing.TB, err error, options ...func(*Reporter)) {
 	t.Helper()
 	if err == nil {
 		return
@@ -213,7 +213,7 @@ func Require(t *testing.T, err error, options ...func(*Reporter)) {
 }
 
 // Assert no error, must not be error, if error is occured, reported by t.Error()
-func Assert(t *testing.T, err error, options ...func(*Reporter)) {
+func Assert(t testing.TB, err error, options ...func(*Reporter)) {
 	t.Helper()
 	if err == nil {
 		return
@@ -235,7 +235,7 @@ func Assert(t *testing.T, err error, options ...func(*Reporter)) {
 }
 
 // Message :
-func Message(t *testing.T, err error, options ...func(*Reporter)) string {
+func Message(t testing.TB, err error, options ...func(*Reporter)) string {
 	t.Helper()
 	if err == nil {
 		return ""
