@@ -194,7 +194,7 @@ func Require(t *testing.T, err error, options ...func(*Reporter)) {
 	t.Fatal(text)
 }
 
-// Assert no error, must not be error, if error is occured, reported by t.Error()
+// Assert no error, should not be error, if error is occured, reported by t.Error()
 func Assert(t *testing.T, err error, options ...func(*Reporter)) {
 	t.Helper()
 	if err == nil {
