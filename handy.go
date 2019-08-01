@@ -57,10 +57,10 @@ func DeepEqual(actual interface{}) *Handy {
 	}
 }
 
-// DeepNotEqual compares by (x, y) -> !reflect.DeepEqual(x, y)
-func DeepNotEqual(actual interface{}) *Handy {
+// NotDeepEqual compares by (x, y) -> !reflect.DeepEqual(x, y)
+func NotDeepEqual(actual interface{}) *Handy {
 	return &Handy{
-		Name:   "DeepNotEqual",
+		Name:   "NotDeepEqual",
 		Actual: actual,
 		Compare: func(x, y interface{}) (bool, error) {
 			return !reflect.DeepEqual(x, y), nil
@@ -87,10 +87,10 @@ func JSONEqual(actual interface{}) *Handy {
 	}
 }
 
-// JSONNotEqual compares by (x, y) -> !reflect.DeepEqual(normalize(x), normalize(y))
-func JSONNotEqual(actual interface{}) *Handy {
+// NotJSONEqual compares by (x, y) -> !reflect.DeepEqual(normalize(x), normalize(y))
+func NotJSONEqual(actual interface{}) *Handy {
 	return &Handy{
-		Name:   "JSONNotEqual",
+		Name:   "NotJSONEqual",
 		Actual: actual,
 		Compare: func(x, y interface{}) (bool, error) {
 			nx, err := normalize(x)

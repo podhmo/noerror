@@ -30,7 +30,7 @@ func TestDeepEqual(t *testing.T) {
 	handy.Require(t, handy.DeepEqual(&p).Except(&p))
 	handy.Assert(t, handy.DeepEqual(p).Except(p2))
 
-	handy.Assert(t, handy.DeepNotEqual(p).Except(&p))
+	handy.Assert(t, handy.NotDeepEqual(p).Except(&p))
 }
 
 func TestJSONEqual(t *testing.T) {
@@ -59,8 +59,8 @@ func TestJSONEqual(t *testing.T) {
 	handy.Assert(t, handy.JSONEqual(p).Except(p1))
 	handy.Assert(t, handy.JSONEqual(p).Except(p2))
 
-	handy.Require(t, handy.JSONNotEqual(nil).Except(&p))
-	handy.Require(t, handy.JSONNotEqual(&p).Except(nil))
-	handy.Assert(t, handy.JSONNotEqual(p).Except(p3))
-	handy.Assert(t, handy.JSONNotEqual(p3).Except(p))
+	handy.Require(t, handy.NotJSONEqual(nil).Except(&p))
+	handy.Require(t, handy.NotJSONEqual(&p).Except(nil))
+	handy.Assert(t, handy.NotJSONEqual(p).Except(p3))
+	handy.Assert(t, handy.NotJSONEqual(p3).Except(p))
 }
