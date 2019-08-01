@@ -218,7 +218,7 @@ func (r *Reporter) Require(t testing.TB, err error) {
 		return
 	}
 
-	text, err := r.BuildDescrption(err)
+	text, err := r.Descrption(err)
 	if err != nil {
 		t.Fatalf("unexpected error, %+v", err)
 	}
@@ -235,7 +235,7 @@ func (r *Reporter) Assert(t testing.TB, err error) {
 		return
 	}
 
-	text, err := r.BuildDescrption(err)
+	text, err := r.Descrption(err)
 	if err != nil {
 		t.Fatalf("unexpected error, %+v", err)
 	}
@@ -252,9 +252,9 @@ func (r *Reporter) Message(t testing.TB, err error) string {
 		return ""
 	}
 
-	text, err := r.BuildDescrption(err)
+	text, err := r.Descrption(err)
 	if err != nil {
-		text, err = r.BuildDescrption(err)
+		text, err = r.Descrption(err)
 		if err != nil {
 			panic(err)
 		}
@@ -265,8 +265,8 @@ func (r *Reporter) Message(t testing.TB, err error) string {
 	return text
 }
 
-// BuildDescrption :
-func (r *Reporter) BuildDescrption(err error) (string, error) {
+// Descrption :
+func (r *Reporter) Descrption(err error) (string, error) {
 	switch x := err.(type) {
 	case *NG:
 		if x.InnerError != nil {
