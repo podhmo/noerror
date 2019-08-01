@@ -27,16 +27,10 @@ func (ng *NG) Error() string {
 // StrictEqual compares by (x, y) -> x == y
 func StrictEqual(actual interface{}) *Handy {
 	return &Handy{
-		actual: actual,
-		Compare: func(x, y interface{}) error {
-			if x == y {
-				return nil
-			}
-			return &NG{
-				Actual:   x,
-				Excepted: y,
-				Message:  "StrictEqual",
-			}
+		Name:   "StrictEqual",
+		Actual: actual,
+		Compare: func(x, y interface{}) (bool, error) {
+			return x == y, nil
 		},
 	}
 }
@@ -44,16 +38,10 @@ func StrictEqual(actual interface{}) *Handy {
 // StrictNotEqual compares by (x, y) -> x != y
 func StrictNotEqual(actual interface{}) *Handy {
 	return &Handy{
-		actual: actual,
-		Compare: func(x, y interface{}) error {
-			if x != y {
-				return nil
-			}
-			return &NG{
-				Actual:   x,
-				Excepted: y,
-				Message:  "StrictNotEqual",
-			}
+		Name:   "StrictNotEqual",
+		Actual: actual,
+		Compare: func(x, y interface{}) (bool, error) {
+			return x != y, nil
 		},
 	}
 }
@@ -61,16 +49,10 @@ func StrictNotEqual(actual interface{}) *Handy {
 // DeepEqual compares by (x, y) -> reflect.DeepEqual(x, y)
 func DeepEqual(actual interface{}) *Handy {
 	return &Handy{
-		actual: actual,
-		Compare: func(x, y interface{}) error {
-			if reflect.DeepEqual(x, y) {
-				return nil
-			}
-			return &NG{
-				Actual:   x,
-				Excepted: y,
-				Message:  "DeepEqual",
-			}
+		Name:   "DeepEqual",
+		Actual: actual,
+		Compare: func(x, y interface{}) (bool, error) {
+			return reflect.DeepEqual(x, y), nil
 		},
 	}
 }
@@ -78,16 +60,10 @@ func DeepEqual(actual interface{}) *Handy {
 // DeepNotEqual compares by (x, y) -> !reflect.DeepEqual(x, y)
 func DeepNotEqual(actual interface{}) *Handy {
 	return &Handy{
-		actual: actual,
-		Compare: func(x, y interface{}) error {
-			if !reflect.DeepEqual(x, y) {
-				return nil
-			}
-			return &NG{
-				Actual:   x,
-				Excepted: y,
-				Message:  "DeepNotEqual",
-			}
+		Name:   "DeepNotEqual",
+		Actual: actual,
+		Compare: func(x, y interface{}) (bool, error) {
+			return !reflect.DeepEqual(x, y), nil
 		},
 	}
 }
@@ -95,50 +71,37 @@ func DeepNotEqual(actual interface{}) *Handy {
 // JSONEqual compares by (x, y) -> reflect.Equal(normalize(x), normalize(y))
 func JSONEqual(actual interface{}) *Handy {
 	return &Handy{
-		actual: actual,
-		Compare: func(x, y interface{}) error {
+		Name:   "JSONEqual",
+		Actual: actual,
+		Compare: func(x, y interface{}) (bool, error) {
 			nx, err := normalize(x)
 			if err != nil {
-				return err // xxx
+				return false, err // xxx
 			}
 			ny, err := normalize(y)
 			if err != nil {
-				return err // xxx
+				return false, err // xxx
 			}
-			if reflect.DeepEqual(nx, ny) {
-				return nil
-			}
-			return &NG{
-				Actual:   x,
-				Excepted: y,
-				Message:  "JSONEqual",
-			}
+			return reflect.DeepEqual(nx, ny), nil
 		},
 	}
 }
 
-// JSONEqual compares by (x, y) -> reflect.Equal(normalize(x), normalize(y))
-
+// JSONNotEqual compares by (x, y) -> reflect.Equal(normalize(x), normalize(y))
 func JSONNotEqual(actual interface{}) *Handy {
 	return &Handy{
-		actual: actual,
-		Compare: func(x, y interface{}) error {
+		Name:   "JSONNotEqual",
+		Actual: actual,
+		Compare: func(x, y interface{}) (bool, error) {
 			nx, err := normalize(x)
 			if err != nil {
-				return err // xxx
+				return false, err // xxx
 			}
 			ny, err := normalize(y)
 			if err != nil {
-				return err // xxx
+				return false, err // xxx
 			}
-			if !reflect.DeepEqual(nx, ny) {
-				return nil
-			}
-			return &NG{
-				Actual:   x,
-				Excepted: y,
-				Message:  "JSONNotEqual",
-			}
+			return !reflect.DeepEqual(nx, ny), nil
 		},
 	}
 }
@@ -157,13 +120,25 @@ func normalize(src interface{}) (interface{}, error) {
 
 // Handy :
 type Handy struct {
-	Compare func(x, y interface{}) error
-	actual  interface{}
+	Name    string
+	Actual  interface{}
+	Compare func(x, y interface{}) (bool, error)
 }
 
 // Except :
 func (h *Handy) Except(expected interface{}) error {
-	return h.Compare(h.actual, expected)
+	ok, err := h.Compare(h.Actual, expected)
+	if err != nil {
+		return err // xxx
+	}
+	if !ok {
+		return &NG{
+			Actual:   h.Actual,
+			Excepted: expected,
+			Message:  h.Name,
+		}
+	}
+	return nil
 }
 
 // Require no error, must not be error, if error is occured, reported by t.Fatal()
