@@ -1,17 +1,17 @@
 [![CircleCI](https://circleci.com/gh/podhmo/handy.svg?style=svg)](https://circleci.com/gh/podhmo/handy)
 
-
 # handy
 
-## motivation
+## Motivation
 
 Sometimes, simple is too strict, and easy is too complicated
 
-## concepts
+## Concepts
 
-testing library is error check library
+- testing library is error check library
+- zero dependencies
 
-## examples
+## Examples
 
 00
 
@@ -22,7 +22,7 @@ if got := add(10, 20); got != 30 {
 }
 
 // handy
-handy.Assert(t, handy.Equal(add(10,20)).Expected(30))
+handy.Assert(t, handy.Equal(30).Actual(add(10,20)))
 
 // testify/assert
 assert.Exactly(t, 30, add(10,20))
@@ -41,7 +41,7 @@ if c != 10 {
 }
 
 // handy
-handy.Assert(t, handy.EqualNoError(Count(x)).Expected(10))
+handy.Assert(t, handy.Equal(10).ActualWithNoError(Count(x))
 
 // testify/assert
 c, err := Count(x)
