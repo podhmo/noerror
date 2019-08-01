@@ -9,7 +9,8 @@ Sometimes, simple is too strict, and easy is too complicated
 
 ## concepts
 
-testing library is error check library
+- testing library is error check library
+- zero dependencies
 
 ## examples
 
