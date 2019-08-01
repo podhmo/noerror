@@ -41,6 +41,23 @@ func StrictEqual(actual interface{}) *Handy {
 	}
 }
 
+// StrictNotEqual compares by (x, y) -> x != y
+func StrictNotEqual(actual interface{}) *Handy {
+	return &Handy{
+		actual: actual,
+		Compare: func(x, y interface{}) error {
+			if x != y {
+				return nil
+			}
+			return &NG{
+				Actual:   x,
+				Excepted: y,
+				Message:  "StrictNotEqual",
+			}
+		},
+	}
+}
+
 // DeepEqual compares by (x, y) -> reflect.DeepEqual(x, y)
 func DeepEqual(actual interface{}) *Handy {
 	return &Handy{
@@ -53,6 +70,23 @@ func DeepEqual(actual interface{}) *Handy {
 				Actual:   x,
 				Excepted: y,
 				Message:  "DeepEqual",
+			}
+		},
+	}
+}
+
+// DeepNotEqual compares by (x, y) -> !reflect.DeepEqual(x, y)
+func DeepNotEqual(actual interface{}) *Handy {
+	return &Handy{
+		actual: actual,
+		Compare: func(x, y interface{}) error {
+			if !reflect.DeepEqual(x, y) {
+				return nil
+			}
+			return &NG{
+				Actual:   x,
+				Excepted: y,
+				Message:  "DeepNotEqual",
 			}
 		},
 	}
@@ -82,6 +116,33 @@ func JSONEqual(actual interface{}) *Handy {
 		},
 	}
 }
+
+// JSONEqual compares by (x, y) -> reflect.Equal(normalize(x), normalize(y))
+
+func JSONNotEqual(actual interface{}) *Handy {
+	return &Handy{
+		actual: actual,
+		Compare: func(x, y interface{}) error {
+			nx, err := normalize(x)
+			if err != nil {
+				return err // xxx
+			}
+			ny, err := normalize(y)
+			if err != nil {
+				return err // xxx
+			}
+			if !reflect.DeepEqual(nx, ny) {
+				return nil
+			}
+			return &NG{
+				Actual:   x,
+				Excepted: y,
+				Message:  "JSONNotEqual",
+			}
+		},
+	}
+}
+
 func normalize(src interface{}) (interface{}, error) {
 	b, err := json.Marshal(src)
 	if err != nil {

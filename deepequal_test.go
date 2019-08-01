@@ -17,4 +17,6 @@ func TestDeepEqual(t *testing.T) {
 	handy.Require(t, handy.DeepEqual(p).Except(p))
 	handy.Require(t, handy.DeepEqual(&p).Except(&p))
 	handy.Assert(t, handy.DeepEqual(p).Except(p2))
+
+	handy.Assert(t, handy.DeepNotEqual(p).Except(&p))
 }
