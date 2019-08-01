@@ -16,11 +16,25 @@ type NG struct {
 
 // Error :
 func (ng *NG) Error() string {
+	var actual string
+	if x, ok := ng.Actual.(fmt.Stringer); ok {
+		actual = x.String()
+	} else {
+		actual = fmt.Sprintf("%+v", ng.Actual)
+	}
+
+	var expected string
+	if x, ok := ng.Expected.(fmt.Stringer); ok {
+		expected = x.String()
+	} else {
+		expected = fmt.Sprintf("%+v", ng.Expected)
+	}
+
 	return fmt.Sprintf(
-		"\nWhere: %s\n\tactual  : %+v\n\texpected: %+v\n",
+		"%s, expected %s, but actual %s",
 		ng.Message,
-		ng.Actual,
-		ng.Expected,
+		expected,
+		actual,
 	)
 }
 
