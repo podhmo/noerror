@@ -1,3 +1,6 @@
+[![CircleCI](https://circleci.com/gh/podhmo/handy.svg?style=svg)](https://circleci.com/gh/podhmo/handy)
+
+
 # handy
 
 ## motivation
