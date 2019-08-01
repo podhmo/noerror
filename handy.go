@@ -10,7 +10,7 @@ import (
 // NG NG
 type NG struct {
 	Actual   interface{}
-	Excepted interface{}
+	Expected interface{}
 	Message  string
 }
 
@@ -20,7 +20,7 @@ func (ng *NG) Error() string {
 		"\nWhere: %s\n\tactual  : %+v\n\texpected: %+v\n",
 		ng.Message,
 		ng.Actual,
-		ng.Excepted,
+		ng.Expected,
 	)
 }
 
@@ -125,8 +125,8 @@ type Handy struct {
 	Compare func(x, y interface{}) (bool, error)
 }
 
-// Except :
-func (h *Handy) Except(expected interface{}) error {
+// Expected :
+func (h *Handy) Expected(expected interface{}) error {
 	ok, err := h.Compare(h.Actual, expected)
 	if err != nil {
 		return err // xxx
@@ -134,7 +134,7 @@ func (h *Handy) Except(expected interface{}) error {
 	if !ok {
 		return &NG{
 			Actual:   h.Actual,
-			Excepted: expected,
+			Expected: expected,
 			Message:  h.Name,
 		}
 	}
@@ -159,8 +159,8 @@ func Assert(t *testing.T, err error) {
 	t.Errorf("%s", err)
 }
 
-// Report :
-func Report(t *testing.T, err error) string {
+// Message :
+func Message(t *testing.T, err error) string {
 	t.Helper()
 	if err == nil {
 		return ""

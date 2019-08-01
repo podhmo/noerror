@@ -11,11 +11,11 @@ func TestEqual(t *testing.T) {
 		return x + y
 	}
 
-	handy.Require(t, handy.Equal(add(10, 20)).Except(30))
-	handy.Assert(t, handy.Equal(add(10, 20)).Except(30))
+	handy.Require(t, handy.Equal(add(10, 20)).Expected(30))
+	handy.Assert(t, handy.Equal(add(10, 20)).Expected(30))
 
-	handy.Require(t, handy.NotEqual(add(10, 20)).Except(31))
-	handy.Assert(t, handy.NotEqual(add(10, 20)).Except(31))
+	handy.Require(t, handy.NotEqual(add(10, 20)).Expected(31))
+	handy.Assert(t, handy.NotEqual(add(10, 20)).Expected(31))
 }
 
 func TestDeepEqual(t *testing.T) {
@@ -26,11 +26,11 @@ func TestDeepEqual(t *testing.T) {
 
 	p := Person{Name: "foo", Age: 20}
 	p2 := Person{Name: "foo", Age: 20}
-	handy.Require(t, handy.DeepEqual(p).Except(p))
-	handy.Require(t, handy.DeepEqual(&p).Except(&p))
-	handy.Assert(t, handy.DeepEqual(p).Except(p2))
+	handy.Require(t, handy.DeepEqual(p).Expected(p))
+	handy.Require(t, handy.DeepEqual(&p).Expected(&p))
+	handy.Assert(t, handy.DeepEqual(p).Expected(p2))
 
-	handy.Assert(t, handy.NotDeepEqual(p).Except(&p))
+	handy.Assert(t, handy.NotDeepEqual(p).Expected(&p))
 }
 
 func TestJSONEqual(t *testing.T) {
@@ -52,15 +52,15 @@ func TestJSONEqual(t *testing.T) {
 	p2 := Person2{Name: "foo", Age: 20}
 	p3 := Person3{Name: "foo", Age: 20}
 
-	handy.Require(t, handy.JSONEqual(p).Except(p))
-	handy.Require(t, handy.JSONEqual(&p).Except(p))
-	handy.Require(t, handy.JSONEqual(p).Except(&p))
-	handy.Require(t, handy.JSONEqual(&p).Except(&p))
-	handy.Assert(t, handy.JSONEqual(p).Except(p1))
-	handy.Assert(t, handy.JSONEqual(p).Except(p2))
+	handy.Require(t, handy.JSONEqual(p).Expected(p))
+	handy.Require(t, handy.JSONEqual(&p).Expected(p))
+	handy.Require(t, handy.JSONEqual(p).Expected(&p))
+	handy.Require(t, handy.JSONEqual(&p).Expected(&p))
+	handy.Assert(t, handy.JSONEqual(p).Expected(p1))
+	handy.Assert(t, handy.JSONEqual(p).Expected(p2))
 
-	handy.Require(t, handy.NotJSONEqual(nil).Except(&p))
-	handy.Require(t, handy.NotJSONEqual(&p).Except(nil))
-	handy.Assert(t, handy.NotJSONEqual(p).Except(p3))
-	handy.Assert(t, handy.NotJSONEqual(p3).Except(p))
+	handy.Require(t, handy.NotJSONEqual(nil).Expected(&p))
+	handy.Require(t, handy.NotJSONEqual(&p).Expected(nil))
+	handy.Assert(t, handy.NotJSONEqual(p).Expected(p3))
+	handy.Assert(t, handy.NotJSONEqual(p3).Expected(p))
 }

@@ -19,7 +19,7 @@ if got := add(10, 20); got != 30 {
 }
 
 // handy
-handy.Assert(t, handy.Equal(add(10,20)).Except(30))
+handy.Assert(t, handy.Equal(add(10,20)).Expected(30))
 
 // testify/assert
 assert.Exactly(t, 30, add(10,20))
@@ -38,7 +38,7 @@ if c != 10 {
 }
 
 // handy
-handy.Assert(t, handy.EqualNoError(Count(x)).Except(10))
+handy.Assert(t, handy.EqualNoError(Count(x)).Expected(10))
 
 // testify/assert
 c, err := Count(x)
