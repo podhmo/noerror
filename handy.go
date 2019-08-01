@@ -107,6 +107,7 @@ func (h *Handy) Except(expected interface{}) error {
 
 // Require no error, must not be error, if error is occured, reported by t.Fatal()
 func Require(t *testing.T, err error) {
+	t.Helper()
 	if err == nil {
 		return
 	}
@@ -115,6 +116,7 @@ func Require(t *testing.T, err error) {
 
 // Assert no error, must not be error, if error is occured, reported by t.Error()
 func Assert(t *testing.T, err error) {
+	t.Helper()
 	if err == nil {
 		return
 	}
@@ -123,6 +125,7 @@ func Assert(t *testing.T, err error) {
 
 // Report :
 func Report(t *testing.T, err error) string {
+	t.Helper()
 	if err == nil {
 		return ""
 	}
