@@ -24,10 +24,10 @@ func (ng *NG) Error() string {
 	)
 }
 
-// StrictEqual compares by (x, y) -> x == y
-func StrictEqual(actual interface{}) *Handy {
+// Equal compares by (x, y) -> x == y
+func Equal(actual interface{}) *Handy {
 	return &Handy{
-		Name:   "StrictEqual",
+		Name:   "Equal",
 		Actual: actual,
 		Compare: func(x, y interface{}) (bool, error) {
 			return x == y, nil
@@ -35,10 +35,10 @@ func StrictEqual(actual interface{}) *Handy {
 	}
 }
 
-// StrictNotEqual compares by (x, y) -> x != y
-func StrictNotEqual(actual interface{}) *Handy {
+// NotEqual compares by (x, y) -> x != y
+func NotEqual(actual interface{}) *Handy {
 	return &Handy{
-		Name:   "StrictNotEqual",
+		Name:   "NotEqual",
 		Actual: actual,
 		Compare: func(x, y interface{}) (bool, error) {
 			return x != y, nil
