@@ -11,11 +11,11 @@ import (
 type NG struct {
 	Actual   interface{}
 	Expected interface{}
-	Message  string
+	Name     string
 }
 
-// Error :
-func (ng *NG) Error() string {
+// Message :
+func (ng *NG) Message(fn func(fmt string, args ...interface{}) string) string {
 	var actual string
 	if x, ok := ng.Actual.(fmt.Stringer); ok {
 		actual = x.String()
@@ -29,13 +29,12 @@ func (ng *NG) Error() string {
 	} else {
 		expected = fmt.Sprintf("%+v", ng.Expected)
 	}
+	return fn("%s, expected %s, but actual %s", ng.Name, expected, actual)
+}
 
-	return fmt.Sprintf(
-		"%s, expected %s, but actual %s",
-		ng.Message,
-		expected,
-		actual,
-	)
+// Error :
+func (ng *NG) Error() string {
+	return ng.Message(fmt.Sprintf)
 }
 
 // Equal compares by (x, y) -> x == y
@@ -149,36 +148,97 @@ func (h *Handy) Expected(expected interface{}) error {
 		return &NG{
 			Actual:   h.Actual,
 			Expected: expected,
-			Message:  h.Name,
+			Name:     h.Name,
 		}
 	}
 	return nil
 }
 
 // Require no error, must not be error, if error is occured, reported by t.Fatal()
-func Require(t *testing.T, err error) {
+func Require(t *testing.T, err error, options ...func(*Reporter)) {
 	t.Helper()
 	if err == nil {
 		return
 	}
-	t.Fatalf("%s", err)
+	r := &Reporter{}
+	for _, opt := range options {
+		opt(r)
+	}
+	text := r.BuildText(err)
+	t.Fatal(text)
 }
 
 // Assert no error, must not be error, if error is occured, reported by t.Error()
-func Assert(t *testing.T, err error) {
+func Assert(t *testing.T, err error, options ...func(*Reporter)) {
 	t.Helper()
 	if err == nil {
 		return
 	}
-	t.Errorf("%s", err)
+	r := &Reporter{}
+	for _, opt := range options {
+		opt(r)
+	}
+	text := r.BuildText(err)
+	t.Errorf(text)
 }
 
 // Message :
-func Message(t *testing.T, err error) string {
+func Message(t *testing.T, err error, options ...func(*Reporter)) string {
 	t.Helper()
 	if err == nil {
 		return ""
 	}
-	t.Logf("%s", err)
-	return fmt.Sprintf("%s", err)
+	r := &Reporter{}
+	for _, opt := range options {
+		opt(r)
+	}
+	text := r.BuildText(err)
+
+	t.Log(text)
+	return text
+}
+
+// Reporter :
+type Reporter struct {
+	Message    string
+	FormatText string
+}
+
+// BuildText :
+func (r *Reporter) BuildText(err error) string {
+	type messager interface {
+		Message(fn func(s string, args ...interface{}) string) string
+	}
+
+	switch x := err.(type) {
+	case messager:
+		return x.Message(func(s string, args ...interface{}) string {
+			name := args[0].(string) // fmt.Sprintf("%s, expected %s, but actual %s")
+			if r.Message != "" {
+				name = r.Message
+			}
+			if r.FormatText != "" {
+				s = r.FormatText
+			}
+			return fmt.Sprintf(s, name, args[1], args[2])
+		})
+	case fmt.Stringer:
+		return x.String()
+	default:
+		return x.Error()
+	}
+}
+
+// WithMessage :
+func WithMessage(message string) func(*Reporter) {
+	return func(r *Reporter) {
+		r.Message = message
+	}
+}
+
+// WithFormatText : format text, default is `"%s, expected %s, but actual %s",`
+func WithFormatText(fmtText string) func(*Reporter) {
+	return func(r *Reporter) {
+		r.FormatText = fmtText
+	}
 }
