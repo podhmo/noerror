@@ -58,8 +58,8 @@ func DeepEqual(actual interface{}) *Handy {
 	}
 }
 
-// EqualByJSON compares by (x, y) -> reflect.Equal(normalize(x), normalize(y))
-func EqualByJSON(actual interface{}) *Handy {
+// JSONEqual compares by (x, y) -> reflect.Equal(normalize(x), normalize(y))
+func JSONEqual(actual interface{}) *Handy {
 	return &Handy{
 		actual: actual,
 		Compare: func(x, y interface{}) error {
@@ -77,7 +77,7 @@ func EqualByJSON(actual interface{}) *Handy {
 			return &NG{
 				Actual:   x,
 				Excepted: y,
-				Message:  "EqualByJSON",
+				Message:  "JSONEqual",
 			}
 		},
 	}
