@@ -113,7 +113,7 @@ type Handy struct {
 	Compare  func(x, y interface{}) (bool, error)
 }
 
-// Actual :
+// Actual binds actual value
 func (h *Handy) Actual(actual interface{}) *NG {
 	ok, err := h.Compare(h.Expected, actual)
 	if err != nil {
@@ -127,6 +127,14 @@ func (h *Handy) Actual(actual interface{}) *NG {
 		}
 	}
 	return nil
+}
+
+// ActualWithNoError bind actual value and no error
+func (h *Handy) ActualWithNoError(actual interface{}, rerr error) *NG {
+	if rerr != nil {
+		return &NG{Name: h.Name, InnerError: rerr} // xxx
+	}
+	return h.Actual(actual)
 }
 
 // NG NG
@@ -177,19 +185,19 @@ func (ng *NG) Error() string {
 }
 
 // Require no error, must not be error, if error is occured, reported by t.Fatal()
-func Require(t *testing.T, err error) {
+func Require(t testing.TB, err error) {
 	t.Helper()
 	DefaultReporter.Require(t, err)
 }
 
 // Assert no error, should not be error, if error is occured, reported by t.Error()
-func Assert(t *testing.T, err error) {
+func Assert(t testing.TB, err error) {
 	t.Helper()
 	DefaultReporter.Assert(t, err)
 }
 
 // Message :
-func Message(t *testing.T, err error) string {
+func Message(t testing.TB, err error) string {
 	t.Helper()
 	return DefaultReporter.Message(t, err)
 }
@@ -201,7 +209,7 @@ type Reporter struct {
 }
 
 // Require no error, must not be error, if error is occured, reported by t.Fatal()
-func (r *Reporter) Require(t *testing.T, err error) {
+func (r *Reporter) Require(t testing.TB, err error) {
 	t.Helper()
 	if err == nil {
 		return
@@ -210,12 +218,15 @@ func (r *Reporter) Require(t *testing.T, err error) {
 		return
 	}
 
-	text := r.BuildDescrption(err)
+	text, err := r.BuildDescrption(err)
+	if err != nil {
+		t.Fatalf("unexpected error, %+v", err)
+	}
 	t.Fatal(text)
 }
 
 // Assert no error, should not be error, if error is occured, reported by t.Error()
-func (r *Reporter) Assert(t *testing.T, err error) {
+func (r *Reporter) Assert(t testing.TB, err error) {
 	t.Helper()
 	if err == nil {
 		return
@@ -224,12 +235,15 @@ func (r *Reporter) Assert(t *testing.T, err error) {
 		return
 	}
 
-	text := r.BuildDescrption(err)
+	text, err := r.BuildDescrption(err)
+	if err != nil {
+		t.Fatalf("unexpected error, %+v", err)
+	}
 	t.Error(text)
 }
 
 // Message :
-func (r *Reporter) Message(t *testing.T, err error) string {
+func (r *Reporter) Message(t testing.TB, err error) string {
 	t.Helper()
 	if err == nil {
 		return ""
@@ -238,27 +252,34 @@ func (r *Reporter) Message(t *testing.T, err error) string {
 		return ""
 	}
 
-	text := r.BuildDescrption(err)
+	text, err := r.BuildDescrption(err)
+	if err != nil {
+		text, err = r.BuildDescrption(err)
+		if err != nil {
+			panic(err)
+		}
+		text = fmt.Sprintf("unexpected error, %+v", text)
+	}
 
 	t.Log(text)
 	return text
 }
 
 // BuildDescrption :
-func (r *Reporter) BuildDescrption(err error) string {
+func (r *Reporter) BuildDescrption(err error) (string, error) {
 	switch x := err.(type) {
 	case *NG:
 		if x.InnerError != nil {
-			return r.BuildDescrption(x.InnerError)
+			return "", x.InnerError
 		}
 		if r.ToDescription != nil {
-			return r.ToDescription(r, x)
+			return r.ToDescription(r, x), nil
 		}
-		return DefaultReporter.ToDescription(r, x)
+		return DefaultReporter.ToDescription(r, x), nil
 	case fmt.Stringer:
-		return x.String()
+		return x.String(), nil
 	case error:
-		return x.Error()
+		return x.Error(), nil
 	default:
 		panic(fmt.Sprintf("unexpected type: %T", x))
 	}

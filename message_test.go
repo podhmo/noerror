@@ -74,6 +74,18 @@ func TestMessageFormat(t *testing.T) {
 	})
 }
 
+func TestMessageWithError(t *testing.T) {
+	count := func() (int, error) {
+		return 0, fmt.Errorf(":bomb:")
+	}
+
+	got := Message(t, Equal(0).ActualWithNoError(count()))
+	want := "unexpected error, :bomb:"
+	if got != want {
+		t.Errorf("expected %q, but actual %q", want, got)
+	}
+}
+
 type fstringer struct {
 	toString func() string
 }
