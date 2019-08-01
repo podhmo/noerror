@@ -1,6 +1,9 @@
 package handy
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestMessageFormat(t *testing.T) {
 	t.Run("equal error", func(t *testing.T) {
@@ -20,10 +23,14 @@ func TestMessageFormat(t *testing.T) {
 			t.Errorf("expected %q, but actual %q", want, got)
 		}
 	})
-	t.Run("with formatText", func(t *testing.T) {
+	t.Run("with ToDescription", func(t *testing.T) {
 		got := Message(t,
 			Equal(10).Expected(11),
-			WithFormatText("%s, want %s, but got %s"),
+			WithDescriptionFunction(func(r *Reporter, ng *NG) string {
+				fmtText := "%s, want %s, but got %s"
+				toString := DefaultReporter.ToString
+				return fmt.Sprintf(fmtText, ng.Name, toString(ng.Expected), toString(ng.Actual))
+			}),
 		)
 		want := `Equal, want 11, but got 10`
 		if got != want {

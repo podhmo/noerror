@@ -7,6 +7,10 @@ import (
 	"testing"
 )
 
+var (
+	DefaultReporter *Reporter
+)
+
 // NG NG
 type NG struct {
 	Actual   interface{}
@@ -15,26 +19,13 @@ type NG struct {
 }
 
 // Message :
-func (ng *NG) Message(fn func(fmt string, args ...interface{}) string) string {
-	var actual string
-	if x, ok := ng.Actual.(fmt.Stringer); ok {
-		actual = x.String()
-	} else {
-		actual = fmt.Sprintf("%+v", ng.Actual)
-	}
-
-	var expected string
-	if x, ok := ng.Expected.(fmt.Stringer); ok {
-		expected = x.String()
-	} else {
-		expected = fmt.Sprintf("%+v", ng.Expected)
-	}
-	return fn("%s, expected %s, but actual %s", ng.Name, expected, actual)
+func (ng *NG) Message(buildText func(r *Reporter, err *NG) string) string {
+	return buildText(DefaultReporter, ng)
 }
 
 // Error :
 func (ng *NG) Error() string {
-	return ng.Message(fmt.Sprintf)
+	return ng.Message(DefaultReporter.ToDescription)
 }
 
 // Equal compares by (x, y) -> x == y
@@ -164,7 +155,7 @@ func Require(t *testing.T, err error, options ...func(*Reporter)) {
 	for _, opt := range options {
 		opt(r)
 	}
-	text := r.BuildText(err)
+	text := r.BuildDescrption(err)
 	t.Fatal(text)
 }
 
@@ -178,7 +169,7 @@ func Assert(t *testing.T, err error, options ...func(*Reporter)) {
 	for _, opt := range options {
 		opt(r)
 	}
-	text := r.BuildText(err)
+	text := r.BuildDescrption(err)
 	t.Errorf(text)
 }
 
@@ -192,7 +183,7 @@ func Message(t *testing.T, err error, options ...func(*Reporter)) string {
 	for _, opt := range options {
 		opt(r)
 	}
-	text := r.BuildText(err)
+	text := r.BuildDescrption(err)
 
 	t.Log(text)
 	return text
@@ -200,32 +191,25 @@ func Message(t *testing.T, err error, options ...func(*Reporter)) string {
 
 // Reporter :
 type Reporter struct {
-	Message    string
-	FormatText string
+	Message       string
+	ToString      func(val interface{}) string
+	ToDescription func(r *Reporter, ng *NG) string
 }
 
-// BuildText :
-func (r *Reporter) BuildText(err error) string {
-	type messager interface {
-		Message(fn func(s string, args ...interface{}) string) string
-	}
-
+// BuildDescrption :
+func (r *Reporter) BuildDescrption(err error) string {
 	switch x := err.(type) {
-	case messager:
-		return x.Message(func(s string, args ...interface{}) string {
-			name := args[0].(string) // fmt.Sprintf("%s, expected %s, but actual %s")
-			if r.Message != "" {
-				name = r.Message
-			}
-			if r.FormatText != "" {
-				s = r.FormatText
-			}
-			return fmt.Sprintf(s, name, args[1], args[2])
-		})
+	case *NG:
+		if r.ToDescription != nil {
+			return r.ToDescription(r, x)
+		}
+		return DefaultReporter.ToDescription(r, x)
 	case fmt.Stringer:
 		return x.String()
-	default:
+	case error:
 		return x.Error()
+	default:
+		panic(fmt.Sprintf("unexpected type: %T", x))
 	}
 }
 
@@ -236,9 +220,32 @@ func WithMessage(message string) func(*Reporter) {
 	}
 }
 
-// WithFormatText : format text, default is `"%s, expected %s, but actual %s",`
-func WithFormatText(fmtText string) func(*Reporter) {
+// WithDescriptionFunction :
+func WithDescriptionFunction(fn func(*Reporter, *NG) string) func(*Reporter) {
 	return func(r *Reporter) {
-		r.FormatText = fmtText
+		r.ToDescription = fn
+	}
+}
+
+func init() {
+	DefaultReporter = &Reporter{
+		ToString: func(val interface{}) string {
+			if x, ok := val.(fmt.Stringer); ok {
+				return x.String()
+			}
+			return fmt.Sprintf("%+v", val)
+		},
+		ToDescription: func(r *Reporter, ng *NG) string {
+			name := r.Message
+			if name == "" {
+				name = ng.Name
+			}
+			toString := r.ToString
+			if toString == nil {
+				toString = DefaultReporter.ToString
+			}
+			fmtText := "%s, expected %s, but actual %s"
+			return fmt.Sprintf(fmtText, name, toString(ng.Expected), toString(ng.Actual))
+		},
 	}
 }
