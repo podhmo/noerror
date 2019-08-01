@@ -220,7 +220,7 @@ func (r *Reporter) Require(t testing.TB, err error) {
 
 	text, err := r.BuildDescrption(err)
 	if err != nil {
-		t.Fatalf("unexpected error %+v", err)
+		t.Fatalf("unexpected error, %+v", err)
 	}
 	t.Fatal(text)
 }
@@ -237,7 +237,7 @@ func (r *Reporter) Assert(t testing.TB, err error) {
 
 	text, err := r.BuildDescrption(err)
 	if err != nil {
-		t.Fatalf("unexpected error %+v", err)
+		t.Fatalf("unexpected error, %+v", err)
 	}
 	t.Error(text)
 }
@@ -256,8 +256,9 @@ func (r *Reporter) Message(t testing.TB, err error) string {
 	if err != nil {
 		text, err = r.BuildDescrption(err)
 		if err != nil {
-			text = fmt.Sprintf("unexpected error %+v", err)
+			panic(err)
 		}
+		text = fmt.Sprintf("unexpected error, %+v", text)
 	}
 
 	t.Log(text)
