@@ -13,10 +13,10 @@ var (
 )
 
 // Equal compares by (x, y) -> x == y
-func Equal(actual interface{}) *Handy {
+func Equal(expected interface{}) *Handy {
 	return &Handy{
-		Name:   "Equal",
-		Actual: actual,
+		Name:     "Equal",
+		Expected: expected,
 		Compare: func(x, y interface{}) (bool, error) {
 			return x == y, nil
 		},
@@ -24,10 +24,10 @@ func Equal(actual interface{}) *Handy {
 }
 
 // NotEqual compares by (x, y) -> x != y
-func NotEqual(actual interface{}) *Handy {
+func NotEqual(expected interface{}) *Handy {
 	return &Handy{
-		Name:   "NotEqual",
-		Actual: actual,
+		Name:     "NotEqual",
+		Expected: expected,
 		Compare: func(x, y interface{}) (bool, error) {
 			return x != y, nil
 		},
@@ -35,10 +35,10 @@ func NotEqual(actual interface{}) *Handy {
 }
 
 // DeepEqual compares by (x, y) -> reflect.DeepEqual(x, y)
-func DeepEqual(actual interface{}) *Handy {
+func DeepEqual(expected interface{}) *Handy {
 	return &Handy{
-		Name:   "DeepEqual",
-		Actual: actual,
+		Name:     "DeepEqual",
+		Expected: expected,
 		Compare: func(x, y interface{}) (bool, error) {
 			return reflect.DeepEqual(x, y), nil
 		},
@@ -46,10 +46,10 @@ func DeepEqual(actual interface{}) *Handy {
 }
 
 // NotDeepEqual compares by (x, y) -> !reflect.DeepEqual(x, y)
-func NotDeepEqual(actual interface{}) *Handy {
+func NotDeepEqual(expected interface{}) *Handy {
 	return &Handy{
-		Name:   "NotDeepEqual",
-		Actual: actual,
+		Name:     "NotDeepEqual",
+		Expected: expected,
 		Compare: func(x, y interface{}) (bool, error) {
 			return !reflect.DeepEqual(x, y), nil
 		},
@@ -57,10 +57,10 @@ func NotDeepEqual(actual interface{}) *Handy {
 }
 
 // JSONEqual compares by (x, y) -> reflect.DeepEqual(normalize(x), normalize(y))
-func JSONEqual(actual interface{}) *Handy {
+func JSONEqual(expected interface{}) *Handy {
 	return &Handy{
-		Name:   "JSONEqual",
-		Actual: actual,
+		Name:     "JSONEqual",
+		Expected: expected,
 		Compare: func(x, y interface{}) (bool, error) {
 			nx, err := normalize(x)
 			if err != nil {
@@ -76,10 +76,10 @@ func JSONEqual(actual interface{}) *Handy {
 }
 
 // NotJSONEqual compares by (x, y) -> !reflect.DeepEqual(normalize(x), normalize(y))
-func NotJSONEqual(actual interface{}) *Handy {
+func NotJSONEqual(expected interface{}) *Handy {
 	return &Handy{
-		Name:   "NotJSONEqual",
-		Actual: actual,
+		Name:     "NotJSONEqual",
+		Expected: expected,
 		Compare: func(x, y interface{}) (bool, error) {
 			nx, err := normalize(x)
 			if err != nil {
@@ -108,21 +108,21 @@ func normalize(src interface{}) (interface{}, error) {
 
 // Handy :
 type Handy struct {
-	Name    string
-	Actual  interface{}
-	Compare func(x, y interface{}) (bool, error)
+	Name     string
+	Expected interface{}
+	Compare  func(x, y interface{}) (bool, error)
 }
 
-// Expected :
-func (h *Handy) Expected(expected interface{}) *NG {
-	ok, err := h.Compare(h.Actual, expected)
+// Actual :
+func (h *Handy) Actual(actual interface{}) *NG {
+	ok, err := h.Compare(h.Expected, actual)
 	if err != nil {
 		return &NG{Name: h.Name, InnerError: err} // xxx
 	}
 	if !ok {
 		return &NG{
-			Actual:   h.Actual,
-			Expected: expected,
+			Expected: h.Expected,
+			Actual:   actual,
 			Name:     h.Name,
 		}
 	}
