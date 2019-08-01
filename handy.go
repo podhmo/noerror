@@ -70,6 +70,20 @@ func Equal(actual interface{}) *Handy {
 	}
 }
 
+// EqualWithNoError compares by (x, y) -> x == y, and error is not occured
+func EqualWithNoError(actual interface{}, err error) *Handy {
+	return &Handy{
+		Name:   "Equal",
+		Actual: actual,
+		Compare: func(x, y interface{}) (bool, error) {
+			if err != nil {
+				return false, err
+			}
+			return x == y, nil
+		},
+	}
+}
+
 // NotEqual compares by (x, y) -> x != y
 func NotEqual(actual interface{}) *Handy {
 	return &Handy{
@@ -190,7 +204,11 @@ func Require(t *testing.T, err error, options ...func(*Reporter)) {
 	for _, opt := range options {
 		opt(r)
 	}
-	text := r.BuildDescrption(err)
+
+	text, err := r.BuildDescrption(err)
+	if err != nil {
+		t.Fatalf("unexpected error, %+v", err)
+	}
 	t.Fatal(text)
 }
 
@@ -208,8 +226,12 @@ func Assert(t *testing.T, err error, options ...func(*Reporter)) {
 	for _, opt := range options {
 		opt(r)
 	}
-	text := r.BuildDescrption(err)
-	t.Errorf(text)
+
+	text, err := r.BuildDescrption(err)
+	if err != nil {
+		t.Fatalf("unexpected error, %+v", err)
+	}
+	t.Error(text)
 }
 
 // Message :
@@ -226,8 +248,14 @@ func Message(t *testing.T, err error, options ...func(*Reporter)) string {
 	for _, opt := range options {
 		opt(r)
 	}
-	text := r.BuildDescrption(err)
-
+	text, err := r.BuildDescrption(err)
+	if err != nil {
+		text, err = r.BuildDescrption(err)
+		if err != nil {
+			panic(err)
+		}
+		text = fmt.Sprintf("unexpected error, %+v", text)
+	}
 	t.Log(text)
 	return text
 }
@@ -239,20 +267,20 @@ type Reporter struct {
 }
 
 // BuildDescrption :
-func (r *Reporter) BuildDescrption(err error) string {
+func (r *Reporter) BuildDescrption(err error) (string, error) {
 	switch x := err.(type) {
 	case *NG:
 		if x.InnerError != nil {
-			return r.BuildDescrption(x.InnerError)
+			return "", x.InnerError
 		}
 		if r.ToDescription != nil {
-			return r.ToDescription(r, x)
+			return r.ToDescription(r, x), nil
 		}
-		return DefaultReporter.ToDescription(r, x)
+		return DefaultReporter.ToDescription(r, x), nil
 	case fmt.Stringer:
-		return x.String()
+		return x.String(), nil
 	case error:
-		return x.Error()
+		return x.Error(), nil
 	default:
 		panic(fmt.Sprintf("unexpected type: %T", x))
 	}
