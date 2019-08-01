@@ -13,14 +13,28 @@ var (
 
 // NG NG
 type NG struct {
-	Actual   interface{}
-	Expected interface{}
-	Name     string
+	Actual     interface{}
+	Expected   interface{}
+	InnerError error
+	Name       string
 }
 
 // Message :
 func (ng *NG) Message(buildText func(r *Reporter, err *NG) string) string {
 	return buildText(DefaultReporter, ng)
+}
+
+// Describe :
+func (ng *NG) Describe(name string) *NG {
+	if ng == nil {
+		return nil
+	}
+	return &NG{
+		Name:       name,
+		InnerError: ng.InnerError,
+		Actual:     ng.Actual,
+		Expected:   ng.Expected,
+	}
 }
 
 // Error :
@@ -130,10 +144,10 @@ type Handy struct {
 }
 
 // Expected :
-func (h *Handy) Expected(expected interface{}) error {
+func (h *Handy) Expected(expected interface{}) *NG {
 	ok, err := h.Compare(h.Actual, expected)
 	if err != nil {
-		return err // xxx
+		return &NG{Name: h.Name, InnerError: err} // xxx
 	}
 	if !ok {
 		return &NG{
@@ -151,6 +165,10 @@ func Require(t *testing.T, err error, options ...func(*Reporter)) {
 	if err == nil {
 		return
 	}
+	if err, ok := err.(*NG); ok && err == nil { // xxx
+		return
+	}
+
 	r := &Reporter{}
 	for _, opt := range options {
 		opt(r)
@@ -165,6 +183,10 @@ func Assert(t *testing.T, err error, options ...func(*Reporter)) {
 	if err == nil {
 		return
 	}
+	if err, ok := err.(*NG); ok && err == nil { // xxx
+		return
+	}
+
 	r := &Reporter{}
 	for _, opt := range options {
 		opt(r)
@@ -179,6 +201,10 @@ func Message(t *testing.T, err error, options ...func(*Reporter)) string {
 	if err == nil {
 		return ""
 	}
+	if err, ok := err.(*NG); ok && err == nil { // xxx
+		return ""
+	}
+
 	r := &Reporter{}
 	for _, opt := range options {
 		opt(r)
@@ -191,7 +217,6 @@ func Message(t *testing.T, err error, options ...func(*Reporter)) string {
 
 // Reporter :
 type Reporter struct {
-	Message       string
 	ToString      func(val interface{}) string
 	ToDescription func(r *Reporter, ng *NG) string
 }
@@ -200,6 +225,9 @@ type Reporter struct {
 func (r *Reporter) BuildDescrption(err error) string {
 	switch x := err.(type) {
 	case *NG:
+		if x.InnerError != nil {
+			return r.BuildDescrption(x.InnerError)
+		}
 		if r.ToDescription != nil {
 			return r.ToDescription(r, x)
 		}
@@ -213,13 +241,6 @@ func (r *Reporter) BuildDescrption(err error) string {
 	}
 }
 
-// WithMessage :
-func WithMessage(message string) func(*Reporter) {
-	return func(r *Reporter) {
-		r.Message = message
-	}
-}
-
 // WithDescriptionFunction :
 func WithDescriptionFunction(fn func(*Reporter, *NG) string) func(*Reporter) {
 	return func(r *Reporter) {
@@ -227,19 +248,19 @@ func WithDescriptionFunction(fn func(*Reporter, *NG) string) func(*Reporter) {
 	}
 }
 
+func toString(val interface{}) string {
+	if x, ok := val.(fmt.Stringer); ok {
+		return x.String()
+	}
+	return fmt.Sprintf("%+v", val)
+}
+
 func init() {
 	DefaultReporter = &Reporter{
-		ToString: func(val interface{}) string {
-			if x, ok := val.(fmt.Stringer); ok {
-				return x.String()
-			}
-			return fmt.Sprintf("%+v", val)
-		},
+		ToString: toString,
 		ToDescription: func(r *Reporter, ng *NG) string {
-			name := r.Message
-			if name == "" {
-				name = ng.Name
-			}
+			name := ng.Name
+
 			toString := r.ToString
 			if toString == nil {
 				toString = DefaultReporter.ToString
