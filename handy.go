@@ -12,53 +12,6 @@ var (
 	DefaultReporter *Reporter
 )
 
-// NG NG
-type NG struct {
-	Actual     interface{}
-	Expected   interface{}
-	InnerError error
-	Name       string
-	args       []interface{}
-}
-
-// Message :
-func (ng *NG) Message(buildText func(r *Reporter, err *NG) string) string {
-	return buildText(DefaultReporter, ng)
-}
-
-// Describe :
-func (ng *NG) Describe(name string) *NG {
-	if ng == nil {
-		return nil
-	}
-	return &NG{
-		Name:       name,
-		args:       ng.args,
-		InnerError: ng.InnerError,
-		Actual:     ng.Actual,
-		Expected:   ng.Expected,
-	}
-}
-
-// Epilog :
-func (ng *NG) Epilog(args ...interface{}) *NG {
-	if ng == nil {
-		return nil
-	}
-	return &NG{
-		Name:       ng.Name,
-		args:       append(ng.args, append([]interface{}{"\n"}, args...)...),
-		InnerError: ng.InnerError,
-		Actual:     ng.Actual,
-		Expected:   ng.Expected,
-	}
-}
-
-// Error :
-func (ng *NG) Error() string {
-	return ng.Message(DefaultReporter.ToDescription)
-}
-
 // Equal compares by (x, y) -> x == y
 func Equal(actual interface{}) *Handy {
 	return &Handy{
@@ -174,6 +127,53 @@ func (h *Handy) Expected(expected interface{}) *NG {
 		}
 	}
 	return nil
+}
+
+// NG NG
+type NG struct {
+	Actual     interface{}
+	Expected   interface{}
+	InnerError error
+	Name       string
+	args       []interface{}
+}
+
+// Message :
+func (ng *NG) Message(buildText func(r *Reporter, err *NG) string) string {
+	return buildText(DefaultReporter, ng)
+}
+
+// Describe :
+func (ng *NG) Describe(name string) *NG {
+	if ng == nil {
+		return nil
+	}
+	return &NG{
+		Name:       name,
+		args:       ng.args,
+		InnerError: ng.InnerError,
+		Actual:     ng.Actual,
+		Expected:   ng.Expected,
+	}
+}
+
+// Epilog :
+func (ng *NG) Epilog(args ...interface{}) *NG {
+	if ng == nil {
+		return nil
+	}
+	return &NG{
+		Name:       ng.Name,
+		args:       append(ng.args, append([]interface{}{"\n"}, args...)...),
+		InnerError: ng.InnerError,
+		Actual:     ng.Actual,
+		Expected:   ng.Expected,
+	}
+}
+
+// Error :
+func (ng *NG) Error() string {
+	return ng.Message(DefaultReporter.ToDescription)
 }
 
 // Require no error, must not be error, if error is occured, reported by t.Fatal()
