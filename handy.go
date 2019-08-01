@@ -17,7 +17,7 @@ type NG struct {
 // Error :
 func (ng *NG) Error() string {
 	return fmt.Sprintf(
-		"%s:\n\tActual:%+v\n\tExpected:%+v\n",
+		"\nWhere: %s\n\tactual  : %+v\n\texpected: %+v\n",
 		ng.Message,
 		ng.Actual,
 		ng.Excepted,
