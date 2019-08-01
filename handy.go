@@ -177,65 +177,71 @@ func (ng *NG) Error() string {
 }
 
 // Require no error, must not be error, if error is occured, reported by t.Fatal()
-func Require(t *testing.T, err error, options ...func(*Reporter)) {
+func Require(t *testing.T, err error) {
 	t.Helper()
-	if err == nil {
-		return
-	}
-	if err, ok := err.(*NG); ok && err == nil { // xxx
-		return
-	}
-
-	r := &Reporter{}
-	for _, opt := range options {
-		opt(r)
-	}
-	text := r.BuildDescrption(err)
-	t.Fatal(text)
+	DefaultReporter.Require(t, err)
 }
 
 // Assert no error, should not be error, if error is occured, reported by t.Error()
-func Assert(t *testing.T, err error, options ...func(*Reporter)) {
+func Assert(t *testing.T, err error) {
 	t.Helper()
-	if err == nil {
-		return
-	}
-	if err, ok := err.(*NG); ok && err == nil { // xxx
-		return
-	}
-
-	r := &Reporter{}
-	for _, opt := range options {
-		opt(r)
-	}
-	text := r.BuildDescrption(err)
-	t.Errorf(text)
+	DefaultReporter.Assert(t, err)
 }
 
 // Message :
-func Message(t *testing.T, err error, options ...func(*Reporter)) string {
+func Message(t *testing.T, err error) string {
 	t.Helper()
-	if err == nil {
-		return ""
-	}
-	if err, ok := err.(*NG); ok && err == nil { // xxx
-		return ""
-	}
-
-	r := &Reporter{}
-	for _, opt := range options {
-		opt(r)
-	}
-	text := r.BuildDescrption(err)
-
-	t.Log(text)
-	return text
+	return DefaultReporter.Message(t, err)
 }
 
 // Reporter :
 type Reporter struct {
 	ToString      func(val interface{}) string
 	ToDescription func(r *Reporter, ng *NG) string
+}
+
+// Require no error, must not be error, if error is occured, reported by t.Fatal()
+func (r *Reporter) Require(t *testing.T, err error) {
+	t.Helper()
+	if err == nil {
+		return
+	}
+	if err, ok := err.(*NG); ok && err == nil { // xxx
+		return
+	}
+
+	text := r.BuildDescrption(err)
+	t.Fatal(text)
+}
+
+// Assert no error, should not be error, if error is occured, reported by t.Error()
+func (r *Reporter) Assert(t *testing.T, err error) {
+	t.Helper()
+	if err == nil {
+		return
+	}
+	if err, ok := err.(*NG); ok && err == nil { // xxx
+		return
+	}
+
+	text := r.BuildDescrption(err)
+	t.Error(text)
+}
+
+// Message :
+func (r *Reporter) Message(t *testing.T, err error) string {
+	t.Helper()
+	if err == nil {
+		return ""
+	}
+	if err, ok := err.(*NG); ok && err == nil { // xxx
+		return ""
+	}
+
+	text := r.BuildDescrption(err)
+
+	t.Log(text)
+	return text
 }
 
 // BuildDescrption :
@@ -255,13 +261,6 @@ func (r *Reporter) BuildDescrption(err error) string {
 		return x.Error()
 	default:
 		panic(fmt.Sprintf("unexpected type: %T", x))
-	}
-}
-
-// WithDescriptionFunction :
-func WithDescriptionFunction(fn func(*Reporter, *NG) string) func(*Reporter) {
-	return func(r *Reporter) {
-		r.ToDescription = fn
 	}
 }
 

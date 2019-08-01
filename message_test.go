@@ -22,20 +22,7 @@ func TestMessageFormat(t *testing.T) {
 			t.Errorf("expected %q, but actual %q", want, got)
 		}
 	})
-	t.Run("with ToDescription", func(t *testing.T) {
-		got := Message(t,
-			Equal(11).Actual(10),
-			WithDescriptionFunction(func(r *Reporter, ng *NG) string {
-				fmtText := "%s, want %s, but got %s"
-				toString := DefaultReporter.ToString
-				return fmt.Sprintf(fmtText, ng.Name, toString(ng.Expected), toString(ng.Actual))
-			}),
-		)
-		want := `Equal, want 11, but got 10`
-		if got != want {
-			t.Errorf("expected %q, but actual %q", want, got)
-		}
-	})
+
 	t.Run("with epilog, skip, when not error", func(t *testing.T) {
 		dummy := &fstringer{
 			toString: func() string {
@@ -64,6 +51,23 @@ func TestMessageFormat(t *testing.T) {
 
 		got := Message(t, Equal(11).Actual(10).Epilog(dummy))
 		want := "Equal, expected 11, but actual 10\n:bomb:"
+		if got != want {
+			t.Errorf("expected %q, but actual %q", want, got)
+		}
+	})
+
+	t.Run("with ToDescription", func(t *testing.T) {
+		r := &Reporter{
+			ToString: DefaultReporter.ToString,
+			ToDescription: func(r *Reporter, ng *NG) string {
+				fmtText := "%s, want %s, but got %s"
+				toString := DefaultReporter.ToString
+				return fmt.Sprintf(fmtText, ng.Name, toString(ng.Expected), toString(ng.Actual))
+			},
+		}
+
+		got := r.Message(t, Equal(11).Actual(10))
+		want := `Equal, want 11, but got 10`
 		if got != want {
 			t.Errorf("expected %q, but actual %q", want, got)
 		}
