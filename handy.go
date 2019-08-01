@@ -264,13 +264,6 @@ func (r *Reporter) BuildDescrption(err error) string {
 	}
 }
 
-// WithDescriptionFunction :
-// func WithDescriptionFunction(fn func(*Reporter, *NG) string) func(*Reporter) {
-// 	return func(r *Reporter) {
-// 		r.ToDescription = fn
-// 	}
-// }
-
 func toString(val interface{}) string {
 	if x, ok := val.(fmt.Stringer); ok {
 		return x.String()
