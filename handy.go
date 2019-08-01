@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -17,6 +18,7 @@ type NG struct {
 	Expected   interface{}
 	InnerError error
 	Name       string
+	args       []interface{}
 }
 
 // Message :
@@ -31,6 +33,21 @@ func (ng *NG) Describe(name string) *NG {
 	}
 	return &NG{
 		Name:       name,
+		args:       ng.args,
+		InnerError: ng.InnerError,
+		Actual:     ng.Actual,
+		Expected:   ng.Expected,
+	}
+}
+
+// Epilog :
+func (ng *NG) Epilog(args ...interface{}) *NG {
+	if ng == nil {
+		return nil
+	}
+	return &NG{
+		Name:       ng.Name,
+		args:       append(ng.args, append([]interface{}{"\n"}, args...)...),
 		InnerError: ng.InnerError,
 		Actual:     ng.Actual,
 		Expected:   ng.Expected,
@@ -266,7 +283,15 @@ func init() {
 				toString = DefaultReporter.ToString
 			}
 			fmtText := "%s, expected %s, but actual %s"
-			return fmt.Sprintf(fmtText, name, toString(ng.Expected), toString(ng.Actual))
+			description := fmt.Sprintf(fmtText, name, toString(ng.Expected), toString(ng.Actual))
+			if ng.args == nil {
+				return description
+			}
+			texts := []string{description}
+			for _, x := range ng.args {
+				texts = append(texts, toString(x))
+			}
+			return strings.Join(texts, "")
 		},
 	}
 }
