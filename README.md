@@ -46,17 +46,17 @@ Assertion functions are just error check functions. There are only 2 functions.
 
 6 functions are defined.
 
-Below functions are the functions that compare by `x == y`.
+compare by `x == y`.
 
 - `Equal(expected interface{}) *Handy`
 - `NotEqual(expected interface{}) *Handy`
 
-Below functions are the functions that compare by `reflect.DeepEqual(x, y)`.
+compare by `reflect.DeepEqual(x, y)`.
 
 - `DeepEqual(expected interface{}) *Handy`
 - `NotDeepEqual(expected interface{}) *Handy`
 
-Below functions are the functions that compare by `reflect.DeepEqual(normalize(x), normalize(y))`, in default, normalize function is something like `json.Unmarshal(json.Marshal())`.
+compare by `reflect.DeepEqual(normalize(x), normalize(y))`, in default, normalize function is something like `json.Unmarshal(json.Marshal())`.
 
 - `JSONEqual(expected interface{}) *Handy`
 - `NotJSONEqual(expected interface{}) *Handy`
