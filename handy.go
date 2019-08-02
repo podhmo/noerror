@@ -165,41 +165,27 @@ func (ng *NG) Describe(name string) *NG {
 	}
 }
 
-// Epilog :
-func (ng *NG) Epilog(args ...interface{}) *NG {
-	if ng == nil {
-		return nil
-	}
-	return &NG{
-		Name:       ng.Name,
-		args:       append(ng.args, append([]interface{}{"\n"}, args...)...),
-		InnerError: ng.InnerError,
-		Actual:     ng.Actual,
-		Expected:   ng.Expected,
-	}
-}
-
 // Error :
 func (ng *NG) Error() string {
 	return ng.Message(DefaultReporter.ToDescription)
 }
 
 // Require no error, must not be error, if error is occured, reported by t.Fatal()
-func Require(t testing.TB, err error) {
+func Require(t testing.TB, err error, args ...interface{}) {
 	t.Helper()
-	DefaultReporter.Require(t, err)
+	DefaultReporter.Require(t, err, args...)
 }
 
 // Assert no error, should not be error, if error is occured, reported by t.Error()
-func Assert(t testing.TB, err error) {
+func Assert(t testing.TB, err error, args ...interface{}) {
 	t.Helper()
-	DefaultReporter.Assert(t, err)
+	DefaultReporter.Assert(t, err, args...)
 }
 
 // Message :
-func Message(t testing.TB, err error) string {
+func Message(t testing.TB, err error, args ...interface{}) string {
 	t.Helper()
-	return DefaultReporter.Message(t, err)
+	return DefaultReporter.Message(t, err, args...)
 }
 
 // Reporter :
@@ -209,7 +195,7 @@ type Reporter struct {
 }
 
 // Require no error, must not be error, if error is occured, reported by t.Fatal()
-func (r *Reporter) Require(t testing.TB, err error) {
+func (r *Reporter) Require(t testing.TB, err error, args ...interface{}) {
 	t.Helper()
 	if err == nil {
 		return
@@ -218,7 +204,7 @@ func (r *Reporter) Require(t testing.TB, err error) {
 		return
 	}
 
-	text, err := r.Descrption(err)
+	text, err := r.Descrption(err, args...)
 	if err != nil {
 		t.Fatalf("unexpected error, %+v", err)
 	}
@@ -226,7 +212,7 @@ func (r *Reporter) Require(t testing.TB, err error) {
 }
 
 // Assert no error, should not be error, if error is occured, reported by t.Error()
-func (r *Reporter) Assert(t testing.TB, err error) {
+func (r *Reporter) Assert(t testing.TB, err error, args ...interface{}) {
 	t.Helper()
 	if err == nil {
 		return
@@ -235,7 +221,7 @@ func (r *Reporter) Assert(t testing.TB, err error) {
 		return
 	}
 
-	text, err := r.Descrption(err)
+	text, err := r.Descrption(err, args...)
 	if err != nil {
 		t.Fatalf("unexpected error, %+v", err)
 	}
@@ -243,7 +229,7 @@ func (r *Reporter) Assert(t testing.TB, err error) {
 }
 
 // Message :
-func (r *Reporter) Message(t testing.TB, err error) string {
+func (r *Reporter) Message(t testing.TB, err error, args ...interface{}) string {
 	t.Helper()
 	if err == nil {
 		return ""
@@ -252,7 +238,7 @@ func (r *Reporter) Message(t testing.TB, err error) string {
 		return ""
 	}
 
-	text, err := r.Descrption(err)
+	text, err := r.Descrption(err, args...)
 	if err != nil {
 		text, err = r.Descrption(err)
 		if err != nil {
@@ -266,12 +252,17 @@ func (r *Reporter) Message(t testing.TB, err error) string {
 }
 
 // Descrption :
-func (r *Reporter) Descrption(err error) (string, error) {
+func (r *Reporter) Descrption(err error, args ...interface{}) (string, error) {
 	switch x := err.(type) {
 	case *NG:
 		if x.InnerError != nil {
 			return "", x.InnerError
 		}
+
+		if len(args) > 0 {
+			x.args = append(append(x.args, "\n"), args...)
+		}
+
 		if r.ToDescription != nil {
 			return r.ToDescription(r, x), nil
 		}
