@@ -143,7 +143,6 @@ type NG struct {
 	Expected   interface{}
 	InnerError error
 	Name       string
-	args       []interface{}
 }
 
 // ToReport :
@@ -158,7 +157,6 @@ func (ng *NG) Describe(name string) *NG {
 	}
 	return &NG{
 		Name:       name,
-		args:       ng.args,
 		InnerError: ng.InnerError,
 		Actual:     ng.Actual,
 		Expected:   ng.Expected,
@@ -244,7 +242,6 @@ func (r *Reporter) Log(t testing.TB, err error, args ...interface{}) string {
 		if err != nil {
 			panic(err)
 		}
-		text = fmt.Sprintf("unexpected error, %+v", text)
 	}
 
 	t.Log(text)
@@ -259,25 +256,24 @@ func (r *Reporter) Report(err error, args ...interface{}) (string, error) {
 			return "", x.InnerError
 		}
 
-		if len(args) > 0 {
-			x.args = append(append(x.args, "\n"), args...)
-		}
-
 		if r.ToReport != nil {
-			return r.ToReport(r, x), nil
+			return withArgs(r.ToReport(r, x), args), nil
 		}
-		return DefaultReporter.ToReport(r, x), nil
+		return withArgs(DefaultReporter.ToReport(r, x), args), nil
 	default:
-		text := fmt.Sprintf("%+v", err)
-		if len(args) == 0 {
-			return text, nil
-		}
-		texts := []string{text}
-		for _, x := range args {
-			texts = append(texts, toString(x))
-		}
-		return strings.Join(texts, ""), nil
+		return withArgs(fmt.Sprintf("unexpected error, %+v", err), args), nil
 	}
+}
+
+func withArgs(text string, args []interface{}) string {
+	if len(args) == 0 {
+		return text
+	}
+	texts := []string{text, "\n"}
+	for _, x := range args {
+		texts = append(texts, toString(x))
+	}
+	return strings.Join(texts, "")
 }
 
 func toString(val interface{}) string {
@@ -298,15 +294,7 @@ func init() {
 				toString = DefaultReporter.ToString
 			}
 			fmtText := "%s, expected %s, but actual %s"
-			text := fmt.Sprintf(fmtText, name, toString(ng.Expected), toString(ng.Actual))
-			if ng.args == nil {
-				return text
-			}
-			texts := []string{text}
-			for _, x := range ng.args {
-				texts = append(texts, toString(x))
-			}
-			return strings.Join(texts, "")
+			return fmt.Sprintf(fmtText, name, toString(ng.Expected), toString(ng.Actual))
 		},
 	}
 }
