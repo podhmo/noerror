@@ -22,6 +22,8 @@ Usually, use these functions as follows.
 
 ```go
 // t is *testing.T
+// want is expected value
+// got is actual value
 
 <Assertion>(t, <Compare>(want).Actual(got))
 ```
