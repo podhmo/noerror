@@ -146,7 +146,7 @@ type NG struct {
 }
 
 // ToReport :
-func (ng *NG) ToReport(toReport func(r *Reporter, err *NG) string) string {
+func (ng *NG) ToReport(toReport func(r *Reporter, err *NG, args ...interface{}) string) string {
 	return toReport(DefaultReporter, ng)
 }
 
@@ -189,7 +189,7 @@ func Log(t testing.TB, err error, args ...interface{}) string {
 // Reporter :
 type Reporter struct {
 	ToString func(val interface{}) string
-	ToReport func(r *Reporter, ng *NG) string
+	ToReport func(r *Reporter, ng *NG, args ...interface{}) string
 }
 
 // Must not have error, if error is occured, reported by t.Fatal()
@@ -257,9 +257,9 @@ func (r *Reporter) Report(err error, args ...interface{}) (string, error) {
 		}
 
 		if r.ToReport != nil {
-			return withArgs(r.ToReport(r, x), args), nil
+			return r.ToReport(r, x, args...), nil
 		}
-		return withArgs(DefaultReporter.ToReport(r, x), args), nil
+		return DefaultReporter.ToReport(r, x, args), nil
 	default:
 		return withArgs(fmt.Sprintf("unexpected error, %+v", err), args), nil
 	}
@@ -286,15 +286,18 @@ func toString(val interface{}) string {
 func init() {
 	DefaultReporter = &Reporter{
 		ToString: toString,
-		ToReport: func(r *Reporter, ng *NG) string {
+		ToReport: func(r *Reporter, ng *NG, args ...interface{}) string {
 			name := ng.Name
 
 			toString := r.ToString
 			if toString == nil {
 				toString = DefaultReporter.ToString
 			}
-			fmtText := "%s, expected %s, but actual %s"
-			return fmt.Sprintf(fmtText, name, toString(ng.Expected), toString(ng.Actual))
+			text := fmt.Sprintf(
+				"%s, expected %s, but actual %s",
+				name, toString(ng.Expected), toString(ng.Actual),
+			)
+			return withArgs(text, args)
 		},
 	}
 }

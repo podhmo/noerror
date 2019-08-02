@@ -61,7 +61,7 @@ func TestLogFormat(t *testing.T) {
 	t.Run("with ToReport", func(t *testing.T) {
 		r := &Reporter{
 			ToString: DefaultReporter.ToString,
-			ToReport: func(r *Reporter, ng *NG) string {
+			ToReport: func(r *Reporter, ng *NG, args ...interface{}) string {
 				fmtText := "%s, want %s, but got %s"
 				toString := DefaultReporter.ToString
 				return fmt.Sprintf(fmtText, ng.Name, toString(ng.Expected), toString(ng.Actual))
