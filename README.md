@@ -94,7 +94,8 @@ One more thing, using with `ActualWithNoError()`, support the function returning
 If error is occured, computation is stopped and `t.Fatal()` is called.
 
 ```go
-// Count is something like func(int) (int, error)
+// Count is something like `func(int) (int, error)`.
+//
 // e.g.
 // func Count(xs []<value>) (int, error) {
 // .. do something
