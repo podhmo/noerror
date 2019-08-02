@@ -1,11 +1,11 @@
-package handy_test
+package noerr_test
 
 import (
 	"fmt"
 	"strings"
 	"testing"
 
-	"github.com/podhmo/handy"
+	"github.com/podhmo/noerr"
 )
 
 type fakeTB struct {
@@ -32,7 +32,7 @@ func TestEqualWithNoError(t *testing.T) {
 
 	t.Run("require, on error, call t.Fatalf()", func(t *testing.T) {
 		ft := &fakeTB{}
-		handy.Must(ft, handy.Equal(0).ActualWithNoError(count()))
+		noerr.Must(ft, noerr.Equal(0).ActualWithNoError(count()))
 		if len(ft.called) == 0 {
 			t.Fatal("testing.TB's method is must be called, but not called")
 		}
@@ -43,7 +43,7 @@ func TestEqualWithNoError(t *testing.T) {
 
 	t.Run("even use Should(), on error, call t.Fatalf()", func(t *testing.T) {
 		ft := &fakeTB{}
-		handy.Should(ft, handy.Equal(0).ActualWithNoError(count()))
+		noerr.Should(ft, noerr.Equal(0).ActualWithNoError(count()))
 		if len(ft.called) == 0 {
 			t.Fatal("testing.TB's method is must be called, but not called")
 		}

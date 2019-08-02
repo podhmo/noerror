@@ -1,6 +1,6 @@
-[![CircleCI](https://circleci.com/gh/podhmo/handy.svg?style=svg)](https://circleci.com/gh/podhmo/handy)
+[![CircleCI](https://circleci.com/gh/podhmo/noerr.svg?style=svg)](https://circleci.com/gh/podhmo/noerr)
 
-# handy
+# noerr
 
 ## Motivation
 
@@ -31,8 +31,8 @@ Usually, use these functions as follows.
 e.g.
 
 ```go
-handy.Must(t, handy.Equal(30).Actual(add(10,20)))
-handy.Should(t, handy.NotEqual(30).Actual(add(10,20)))
+noerr.Must(t, noerr.Equal(30).Actual(add(10,20)))
+noerr.Should(t, noerr.NotEqual(30).Actual(add(10,20)))
 ```
 
 ### Assertion functions
@@ -70,9 +70,9 @@ compare by `reflect.DeepEqual(normalize(x), normalize(y))`, in default, normaliz
 Normaly, we use `Must()` and `Should()` with compare functions (such as `Equal()`).
 
 ```go
-// handy
-handy.Must(t, handy.Equal(30).Actual(add(10,20)))
-handy.Should(t, handy.Equal(30).Actual(add(10,20)))
+// noerr
+noerr.Must(t, noerr.Equal(30).Actual(add(10,20)))
+noerr.Should(t, noerr.Equal(30).Actual(add(10,20)))
 
 
 // *testing.T 's example (simple but tiresome)
@@ -104,8 +104,8 @@ If error is occured, computation is stopped and `t.Fatal()` is called.
 // }
 
 
-// handy
-handy.Should(t, handy.Equal(10).ActualWithNoError(Count(x))
+// noerr
+noerr.Should(t, noerr.Equal(10).ActualWithNoError(Count(x))
 
 
 // *testing.T
@@ -128,12 +128,12 @@ assert.Exactly(t, c, 10)
 code
 
 ```go
-handy.Should(t, handy.Equal(10).Actual(1+1))
-handy.Should(t, handy.Equal(10).Actual(1+1).Describe("1+1"))
+noerr.Should(t, noerr.Equal(10).Actual(1+1))
+noerr.Should(t, noerr.Equal(10).Actual(1+1).Describe("1+1"))
 
 // Count() returns error
 Count := func() (int, error) { return 0, fmt.Errorf("*ERROR*") }
-handy.Should(t, handy.Equal(0).ActualWithNoError(Count()))
+noerr.Should(t, noerr.Equal(0).ActualWithNoError(Count()))
 ```
 
 output
@@ -145,4 +145,4 @@ Equal, expected 10, but actual 2
 unexpected error, *ERROR*
 ```
 
-custom output examples, [TODO](https://github.com/podhmo/handy/blob/ab7573214f6da953fef1a17692ff9abf4d09686c/log_test.go#L59)
+custom output examples, [TODO](https://github.com/podhmo/noerr/blob/ab7573214f6da953fef1a17692ff9abf4d09686c/log_test.go#L59)
