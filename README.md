@@ -13,7 +13,7 @@ Sometimes, simple is too strict, and easy is too complicated
 
 ## How to use
 
-Two group functions are defined.
+Two types of functions are defined.
 
 - compare functions
 - assertion functions (or error check functions)
