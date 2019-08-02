@@ -32,7 +32,7 @@ func TestEqualWithNoError(t *testing.T) {
 
 	t.Run("require, on error, call t.Fatalf()", func(t *testing.T) {
 		ft := &fakeTB{}
-		handy.Require(ft, handy.Equal(0).ActualWithNoError(count()))
+		handy.Must(ft, handy.Equal(0).ActualWithNoError(count()))
 		if len(ft.called) == 0 {
 			t.Fatal("testing.TB's method is must be called, but not called")
 		}

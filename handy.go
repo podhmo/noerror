@@ -170,10 +170,10 @@ func (ng *NG) Error() string {
 	return ng.Message(DefaultReporter.ToDescription)
 }
 
-// Require no error, must not be error, if error is occured, reported by t.Fatal()
-func Require(t testing.TB, err error, args ...interface{}) {
+// Must not have error, if error is occured, reported by t.Fatal()
+func Must(t testing.TB, err error, args ...interface{}) {
 	t.Helper()
-	DefaultReporter.Require(t, err, args...)
+	DefaultReporter.Must(t, err, args...)
 }
 
 // Should not have error, if error is occured, reported by t.Error()
@@ -194,8 +194,8 @@ type Reporter struct {
 	ToDescription func(r *Reporter, ng *NG) string
 }
 
-// Require no error, must not be error, if error is occured, reported by t.Fatal()
-func (r *Reporter) Require(t testing.TB, err error, args ...interface{}) {
+// Must no error, must not be error, if error is occured, reported by t.Fatal()
+func (r *Reporter) Must(t testing.TB, err error, args ...interface{}) {
 	t.Helper()
 	if err == nil {
 		return
