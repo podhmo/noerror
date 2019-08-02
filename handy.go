@@ -176,10 +176,10 @@ func Require(t testing.TB, err error, args ...interface{}) {
 	DefaultReporter.Require(t, err, args...)
 }
 
-// Assert no error, should not be error, if error is occured, reported by t.Error()
-func Assert(t testing.TB, err error, args ...interface{}) {
+// Should not have error, if error is occured, reported by t.Error()
+func Should(t testing.TB, err error, args ...interface{}) {
 	t.Helper()
-	DefaultReporter.Assert(t, err, args...)
+	DefaultReporter.Should(t, err, args...)
 }
 
 // Message :
@@ -211,8 +211,8 @@ func (r *Reporter) Require(t testing.TB, err error, args ...interface{}) {
 	t.Fatal(text)
 }
 
-// Assert no error, should not be error, if error is occured, reported by t.Error()
-func (r *Reporter) Assert(t testing.TB, err error, args ...interface{}) {
+// Should no error, should not be error, if error is occured, reported by t.Error()
+func (r *Reporter) Should(t testing.TB, err error, args ...interface{}) {
 	t.Helper()
 	if err == nil {
 		return
