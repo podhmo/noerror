@@ -106,7 +106,7 @@ func normalize(src interface{}) (interface{}, error) {
 	return dst, nil
 }
 
-// Handy :
+// Handy is internal object, handling compare state, not have to use this, directly
 type Handy struct {
 	Name     string
 	Expected interface{}
@@ -137,7 +137,7 @@ func (h *Handy) ActualWithNoError(actual interface{}, rerr error) *NG {
 	return h.Actual(actual)
 }
 
-// NG NG
+// NG is Error value, if test is failed, wrapping state by this struct
 type NG struct {
 	Actual     interface{}
 	Expected   interface{}
@@ -146,9 +146,9 @@ type NG struct {
 	args       []interface{}
 }
 
-// Message :
-func (ng *NG) Message(buildText func(r *Reporter, err *NG) string) string {
-	return buildText(DefaultReporter, ng)
+// ToReport :
+func (ng *NG) ToReport(toReport func(r *Reporter, err *NG) string) string {
+	return toReport(DefaultReporter, ng)
 }
 
 // Describe :
@@ -167,35 +167,35 @@ func (ng *NG) Describe(name string) *NG {
 
 // Error :
 func (ng *NG) Error() string {
-	return ng.Message(DefaultReporter.ToDescription)
+	return ng.ToReport(DefaultReporter.ToReport)
 }
 
-// Require no error, must not be error, if error is occured, reported by t.Fatal()
-func Require(t testing.TB, err error, args ...interface{}) {
+// Must not have error, if error is occured, reported by t.Fatal()
+func Must(t testing.TB, err error, args ...interface{}) {
 	t.Helper()
-	DefaultReporter.Require(t, err, args...)
+	DefaultReporter.Must(t, err, args...)
 }
 
-// Assert no error, should not be error, if error is occured, reported by t.Error()
-func Assert(t testing.TB, err error, args ...interface{}) {
+// Should not have error, if error is occured, reported by t.Error()
+func Should(t testing.TB, err error, args ...interface{}) {
 	t.Helper()
-	DefaultReporter.Assert(t, err, args...)
+	DefaultReporter.Should(t, err, args...)
 }
 
-// Message :
-func Message(t testing.TB, err error, args ...interface{}) string {
+// Log logs error, if error is occured, logs by t.Log() and return logged message by string
+func Log(t testing.TB, err error, args ...interface{}) string {
 	t.Helper()
-	return DefaultReporter.Message(t, err, args...)
+	return DefaultReporter.Log(t, err, args...)
 }
 
 // Reporter :
 type Reporter struct {
-	ToString      func(val interface{}) string
-	ToDescription func(r *Reporter, ng *NG) string
+	ToString func(val interface{}) string
+	ToReport func(r *Reporter, ng *NG) string
 }
 
-// Require no error, must not be error, if error is occured, reported by t.Fatal()
-func (r *Reporter) Require(t testing.TB, err error, args ...interface{}) {
+// Must not have error, if error is occured, reported by t.Fatal()
+func (r *Reporter) Must(t testing.TB, err error, args ...interface{}) {
 	t.Helper()
 	if err == nil {
 		return
@@ -211,8 +211,8 @@ func (r *Reporter) Require(t testing.TB, err error, args ...interface{}) {
 	t.Fatal(text)
 }
 
-// Assert no error, should not be error, if error is occured, reported by t.Error()
-func (r *Reporter) Assert(t testing.TB, err error, args ...interface{}) {
+// Should not have error, if error is occured, reported by t.Error()
+func (r *Reporter) Should(t testing.TB, err error, args ...interface{}) {
 	t.Helper()
 	if err == nil {
 		return
@@ -228,8 +228,8 @@ func (r *Reporter) Assert(t testing.TB, err error, args ...interface{}) {
 	t.Error(text)
 }
 
-// Message :
-func (r *Reporter) Message(t testing.TB, err error, args ...interface{}) string {
+// Log logs error, if error is occured, logs by t.Log() and return logged message by string
+func (r *Reporter) Log(t testing.TB, err error, args ...interface{}) string {
 	t.Helper()
 	if err == nil {
 		return ""
@@ -263,10 +263,10 @@ func (r *Reporter) Descrption(err error, args ...interface{}) (string, error) {
 			x.args = append(append(x.args, "\n"), args...)
 		}
 
-		if r.ToDescription != nil {
-			return r.ToDescription(r, x), nil
+		if r.ToReport != nil {
+			return r.ToReport(r, x), nil
 		}
-		return DefaultReporter.ToDescription(r, x), nil
+		return DefaultReporter.ToReport(r, x), nil
 	case fmt.Stringer:
 		return x.String(), nil
 	case error:
@@ -286,7 +286,7 @@ func toString(val interface{}) string {
 func init() {
 	DefaultReporter = &Reporter{
 		ToString: toString,
-		ToDescription: func(r *Reporter, ng *NG) string {
+		ToReport: func(r *Reporter, ng *NG) string {
 			name := ng.Name
 
 			toString := r.ToString
