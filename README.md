@@ -37,8 +37,10 @@ handy.Should(t, handy.NotEqual(30).Actual(add(10,20)))
 
 Assertion functions are just error check functions. There are only 2 functions.
 
-- `Must(*testing.T, error)` -- if error is occured, calling t.Fatal()
-- `Should(*testing.T, error)` -- if error is occured, calling t.Error()
+- `Must(*testing.T, error)`
+- `Should(*testing.T, error)`
+
+`Must()`, if error is occured, calling `*testing.T.Fatal()`. And using `Should()`, `t.Error()` is called when error is occured.
 
 ### Compare functions
 
