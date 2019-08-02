@@ -204,7 +204,7 @@ func (r *Reporter) Must(t testing.TB, err error, args ...interface{}) {
 		return
 	}
 
-	text, err := r.Descrption(err, args...)
+	text, err := r.Report(err, args...)
 	if err != nil {
 		t.Fatalf("unexpected error, %+v", err)
 	}
@@ -221,7 +221,7 @@ func (r *Reporter) Should(t testing.TB, err error, args ...interface{}) {
 		return
 	}
 
-	text, err := r.Descrption(err, args...)
+	text, err := r.Report(err, args...)
 	if err != nil {
 		t.Fatalf("unexpected error, %+v", err)
 	}
@@ -238,9 +238,9 @@ func (r *Reporter) Log(t testing.TB, err error, args ...interface{}) string {
 		return ""
 	}
 
-	text, err := r.Descrption(err, args...)
+	text, err := r.Report(err, args...)
 	if err != nil {
-		text, err = r.Descrption(err)
+		text, err = r.Report(err)
 		if err != nil {
 			panic(err)
 		}
@@ -251,8 +251,8 @@ func (r *Reporter) Log(t testing.TB, err error, args ...interface{}) string {
 	return text
 }
 
-// Descrption :
-func (r *Reporter) Descrption(err error, args ...interface{}) (string, error) {
+// Report :
+func (r *Reporter) Report(err error, args ...interface{}) (string, error) {
 	switch x := err.(type) {
 	case *NG:
 		if x.InnerError != nil {
