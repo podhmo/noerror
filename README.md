@@ -18,7 +18,7 @@ Two types of functions are defined.
 - compare functions
 - assertion functions (or error check functions)
 
-Usually, use these functions, like a below.
+Usually, use these functions as follows.
 
 ```go
 // t is *testing.T
