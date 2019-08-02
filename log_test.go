@@ -5,6 +5,8 @@ import (
 	"io"
 	"strings"
 	"testing"
+
+	"github.com/pkg/errors"
 )
 
 func TestLogFormat(t *testing.T) {
@@ -72,9 +74,26 @@ func TestLogFormat(t *testing.T) {
 			t.Errorf("expected %q, but actual %q", want, got)
 		}
 	})
+
+	t.Run("raw error", func(t *testing.T) {
+		got := Log(t, &fstringer{toString: func() string { return "*raw*" }})
+		want := "unexpected error, !!*raw*"
+		if got != want {
+			t.Errorf("expected %q, but actual %q", want, got)
+		}
+	})
+
+	t.Run("pkg/errors", func(t *testing.T) {
+		raw := &fstringer{toString: func() string { return "*raw*" }}
+		got := Log(t, errors.WithMessage(raw, "WRAP"))
+		want := "unexpected error, !!*raw*\nWRAP"
+		if got != want {
+			t.Errorf("expected %q, but actual %q", want, got)
+		}
+	})
 }
 
-func TestLogWithError(t *testing.T) {
+func TestLogWithNoError(t *testing.T) {
 	count := func() (int, error) {
 		return 0, fmt.Errorf(":bomb:")
 	}
@@ -92,4 +111,8 @@ type fstringer struct {
 
 func (x *fstringer) String() string {
 	return x.toString()
+}
+
+func (x *fstringer) Error() string {
+	return "!!" + x.toString()
 }
