@@ -1,4 +1,4 @@
-module github.com/podhmo/noerr
+module github.com/podhmo/noerror
 
 go 1.12
 

@@ -1,4 +1,4 @@
-package noerr
+package noerror
 
 import (
 	"encoding/json"
