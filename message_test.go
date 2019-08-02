@@ -36,7 +36,7 @@ func TestMessageFormat(t *testing.T) {
 			},
 		}
 
-		got := Message(t, Equal(10).Actual(10).Epilog(dummy))
+		got := Message(t, Equal(10).Actual(10), dummy)
 		want := ``
 		if got != want {
 			t.Errorf("expected %q, but actual %q", want, got)
@@ -49,7 +49,7 @@ func TestMessageFormat(t *testing.T) {
 			},
 		}
 
-		got := Message(t, Equal(11).Actual(10).Epilog(dummy))
+		got := Message(t, Equal(11).Actual(10), dummy)
 		want := "Equal, expected 11, but actual 10\n:bomb:"
 		if got != want {
 			t.Errorf("expected %q, but actual %q", want, got)
