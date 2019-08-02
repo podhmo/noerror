@@ -93,12 +93,12 @@ func TestLogFormat(t *testing.T) {
 	})
 }
 
-func TestLogWithNoError(t *testing.T) {
+func TestLogWithError(t *testing.T) {
 	count := func() (int, error) {
 		return 0, fmt.Errorf(":bomb:")
 	}
 
-	got := Log(t, Equal(0).ActualWithNoError(count()))
+	got := Log(t, Equal(0).ActualWithError(count()))
 	want := "unexpected error, :bomb:"
 	if got != want {
 		t.Errorf("expected %q, but actual %q", want, got)

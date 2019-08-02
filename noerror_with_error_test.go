@@ -25,14 +25,14 @@ func (t *fakeTB) Error(val ...interface{}) {
 	t.called = append(t.called, "error")
 }
 
-func TestEqualWithNoError(t *testing.T) {
+func TestEqualWithError(t *testing.T) {
 	count := func() (int, error) {
 		return 0, fmt.Errorf(":bomb:")
 	}
 
 	t.Run("require, on error, call t.Fatalf()", func(t *testing.T) {
 		ft := &fakeTB{}
-		noerror.Must(ft, noerror.Equal(0).ActualWithNoError(count()))
+		noerror.Must(ft, noerror.Equal(0).ActualWithError(count()))
 		if len(ft.called) == 0 {
 			t.Fatal("testing.TB's method is must be called, but not called")
 		}
@@ -43,7 +43,7 @@ func TestEqualWithNoError(t *testing.T) {
 
 	t.Run("even use Should(), on error, call t.Fatalf()", func(t *testing.T) {
 		ft := &fakeTB{}
-		noerror.Should(ft, noerror.Equal(0).ActualWithNoError(count()))
+		noerror.Should(ft, noerror.Equal(0).ActualWithError(count()))
 		if len(ft.called) == 0 {
 			t.Fatal("testing.TB's method is must be called, but not called")
 		}

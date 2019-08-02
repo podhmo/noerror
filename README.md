@@ -91,7 +91,7 @@ assert.Exactly(t, 30, add(10,20))
 
 ### One more thing
 
-One more thing, using with `ActualWithNoError()`, support the function returning multiple values, something like `func (<value>) (<value>, error)`. 
+One more thing, using with `ActualWithError()`, support the function returning multiple values, something like `func (<value>) (<value>, error)`. 
 
 If error is occured, computation is stopped and `t.Fatal()` is called.
 
@@ -105,7 +105,7 @@ If error is occured, computation is stopped and `t.Fatal()` is called.
 
 
 // noerror
-noerror.Should(t, noerror.Equal(10).ActualWithNoError(Count(x))
+noerror.Should(t, noerror.Equal(10).ActualWithError(Count(x))
 
 
 // *testing.T
@@ -133,7 +133,7 @@ noerror.Should(t, noerror.Equal(10).Actual(1+1).Describe("1+1"))
 
 // Count() returns error
 Count := func() (int, error) { return 0, fmt.Errorf("*ERROR*") }
-noerror.Should(t, noerror.Equal(0).ActualWithNoError(Count()))
+noerror.Should(t, noerror.Equal(0).ActualWithError(Count()))
 ```
 
 output

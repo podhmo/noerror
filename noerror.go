@@ -129,8 +129,8 @@ func (h *Handy) Actual(actual interface{}) *NG {
 	return nil
 }
 
-// ActualWithNoError bind actual value and no error
-func (h *Handy) ActualWithNoError(actual interface{}, rerr error) *NG {
+// ActualWithError bind actual value and no error
+func (h *Handy) ActualWithError(actual interface{}, rerr error) *NG {
 	if rerr != nil {
 		return &NG{Name: h.Name, InnerError: rerr} // xxx
 	}
