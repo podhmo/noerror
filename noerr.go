@@ -143,11 +143,10 @@ type NG struct {
 	Expected   interface{}
 	InnerError error
 	Name       string
-	args       []interface{}
 }
 
 // ToReport :
-func (ng *NG) ToReport(toReport func(r *Reporter, err *NG) string) string {
+func (ng *NG) ToReport(toReport func(r *Reporter, err *NG, args ...interface{}) string) string {
 	return toReport(DefaultReporter, ng)
 }
 
@@ -158,7 +157,6 @@ func (ng *NG) Describe(name string) *NG {
 	}
 	return &NG{
 		Name:       name,
-		args:       ng.args,
 		InnerError: ng.InnerError,
 		Actual:     ng.Actual,
 		Expected:   ng.Expected,
@@ -191,7 +189,7 @@ func Log(t testing.TB, err error, args ...interface{}) string {
 // Reporter :
 type Reporter struct {
 	ToString func(val interface{}) string
-	ToReport func(r *Reporter, ng *NG) string
+	ToReport func(r *Reporter, ng *NG, args ...interface{}) string
 }
 
 // Must not have error, if error is occured, reported by t.Fatal()
@@ -244,7 +242,6 @@ func (r *Reporter) Log(t testing.TB, err error, args ...interface{}) string {
 		if err != nil {
 			panic(err)
 		}
-		text = fmt.Sprintf("unexpected error, %+v", text)
 	}
 
 	t.Log(text)
@@ -259,21 +256,24 @@ func (r *Reporter) Report(err error, args ...interface{}) (string, error) {
 			return "", x.InnerError
 		}
 
-		if len(args) > 0 {
-			x.args = append(append(x.args, "\n"), args...)
-		}
-
 		if r.ToReport != nil {
-			return r.ToReport(r, x), nil
+			return r.ToReport(r, x, args...), nil
 		}
-		return DefaultReporter.ToReport(r, x), nil
-	case fmt.Stringer:
-		return x.String(), nil
-	case error:
-		return x.Error(), nil
+		return DefaultReporter.ToReport(r, x, args), nil
 	default:
-		panic(fmt.Sprintf("unexpected type: %T", x))
+		return withArgs(fmt.Sprintf("unexpected error, %+v", err), args), nil
 	}
+}
+
+func withArgs(text string, args []interface{}) string {
+	if len(args) == 0 {
+		return text
+	}
+	texts := []string{text, "\n"}
+	for _, x := range args {
+		texts = append(texts, toString(x))
+	}
+	return strings.Join(texts, "")
 }
 
 func toString(val interface{}) string {
@@ -286,23 +286,18 @@ func toString(val interface{}) string {
 func init() {
 	DefaultReporter = &Reporter{
 		ToString: toString,
-		ToReport: func(r *Reporter, ng *NG) string {
+		ToReport: func(r *Reporter, ng *NG, args ...interface{}) string {
 			name := ng.Name
 
 			toString := r.ToString
 			if toString == nil {
 				toString = DefaultReporter.ToString
 			}
-			fmtText := "%s, expected %s, but actual %s"
-			description := fmt.Sprintf(fmtText, name, toString(ng.Expected), toString(ng.Actual))
-			if ng.args == nil {
-				return description
-			}
-			texts := []string{description}
-			for _, x := range ng.args {
-				texts = append(texts, toString(x))
-			}
-			return strings.Join(texts, "")
+			text := fmt.Sprintf(
+				"%s, expected %s, but actual %s",
+				name, toString(ng.Expected), toString(ng.Actual),
+			)
+			return withArgs(text, args)
 		},
 	}
 }
