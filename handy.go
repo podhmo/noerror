@@ -146,9 +146,9 @@ type NG struct {
 	args       []interface{}
 }
 
-// Message :
-func (ng *NG) Message(buildText func(r *Reporter, err *NG) string) string {
-	return buildText(DefaultReporter, ng)
+// ToReport :
+func (ng *NG) ToReport(toReport func(r *Reporter, err *NG) string) string {
+	return toReport(DefaultReporter, ng)
 }
 
 // Describe :
@@ -167,7 +167,7 @@ func (ng *NG) Describe(name string) *NG {
 
 // Error :
 func (ng *NG) Error() string {
-	return ng.Message(DefaultReporter.ToDescription)
+	return ng.ToReport(DefaultReporter.ToReport)
 }
 
 // Must not have error, if error is occured, reported by t.Fatal()
@@ -182,16 +182,16 @@ func Should(t testing.TB, err error, args ...interface{}) {
 	DefaultReporter.Should(t, err, args...)
 }
 
-// Message :
-func Message(t testing.TB, err error, args ...interface{}) string {
+// Log :
+func Log(t testing.TB, err error, args ...interface{}) string {
 	t.Helper()
-	return DefaultReporter.Message(t, err, args...)
+	return DefaultReporter.Log(t, err, args...)
 }
 
 // Reporter :
 type Reporter struct {
 	ToString      func(val interface{}) string
-	ToDescription func(r *Reporter, ng *NG) string
+	ToReport func(r *Reporter, ng *NG) string
 }
 
 // Must no error, must not be error, if error is occured, reported by t.Fatal()
@@ -228,8 +228,8 @@ func (r *Reporter) Should(t testing.TB, err error, args ...interface{}) {
 	t.Error(text)
 }
 
-// Message :
-func (r *Reporter) Message(t testing.TB, err error, args ...interface{}) string {
+// Log :
+func (r *Reporter) Log(t testing.TB, err error, args ...interface{}) string {
 	t.Helper()
 	if err == nil {
 		return ""
@@ -263,10 +263,10 @@ func (r *Reporter) Descrption(err error, args ...interface{}) (string, error) {
 			x.args = append(append(x.args, "\n"), args...)
 		}
 
-		if r.ToDescription != nil {
-			return r.ToDescription(r, x), nil
+		if r.ToReport != nil {
+			return r.ToReport(r, x), nil
 		}
-		return DefaultReporter.ToDescription(r, x), nil
+		return DefaultReporter.ToReport(r, x), nil
 	case fmt.Stringer:
 		return x.String(), nil
 	case error:
@@ -286,7 +286,7 @@ func toString(val interface{}) string {
 func init() {
 	DefaultReporter = &Reporter{
 		ToString: toString,
-		ToDescription: func(r *Reporter, ng *NG) string {
+		ToReport: func(r *Reporter, ng *NG) string {
 			name := ng.Name
 
 			toString := r.ToString
