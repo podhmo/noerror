@@ -122,3 +122,27 @@ c, err := Count(x)
 require.NoError(t, err)
 assert.Exactly(t, c, 10)
 ```
+
+## Output if test is failed
+
+code
+
+```go
+handy.Should(t, handy.Equal(10).Actual(1+1))
+handy.Should(t, handy.Equal(10).Actual(1+1).Describe("1+1"))
+
+// Count() returns error
+Count := func() (int, error) { return 0, fmt.Errorf("*ERROR*") }
+handy.Should(t, handy.Equal(0).ActualWithNoError(Count()))
+```
+
+output
+
+```
+Equal, expected 10, but actual 2
+1+1, expected 10, but actual 2
+
+unexpected error, *ERROR*
+```
+
+custom output examples, [TODO](https://github.com/podhmo/handy/blob/ab7573214f6da953fef1a17692ff9abf4d09686c/log_test.go#L59)
