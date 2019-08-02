@@ -106,7 +106,7 @@ func normalize(src interface{}) (interface{}, error) {
 	return dst, nil
 }
 
-// Handy :
+// Handy is internal object, handling compare state, not have to use this, directly
 type Handy struct {
 	Name     string
 	Expected interface{}
@@ -137,7 +137,7 @@ func (h *Handy) ActualWithNoError(actual interface{}, rerr error) *NG {
 	return h.Actual(actual)
 }
 
-// NG NG
+// NG is Error value, if test is failed, wrapping state by this struct
 type NG struct {
 	Actual     interface{}
 	Expected   interface{}
@@ -182,7 +182,7 @@ func Should(t testing.TB, err error, args ...interface{}) {
 	DefaultReporter.Should(t, err, args...)
 }
 
-// Log :
+// Log logs error, if error is occured, logs by t.Log() and return logged message by string
 func Log(t testing.TB, err error, args ...interface{}) string {
 	t.Helper()
 	return DefaultReporter.Log(t, err, args...)
@@ -190,11 +190,11 @@ func Log(t testing.TB, err error, args ...interface{}) string {
 
 // Reporter :
 type Reporter struct {
-	ToString      func(val interface{}) string
+	ToString func(val interface{}) string
 	ToReport func(r *Reporter, ng *NG) string
 }
 
-// Must no error, must not be error, if error is occured, reported by t.Fatal()
+// Must not have error, if error is occured, reported by t.Fatal()
 func (r *Reporter) Must(t testing.TB, err error, args ...interface{}) {
 	t.Helper()
 	if err == nil {
@@ -211,7 +211,7 @@ func (r *Reporter) Must(t testing.TB, err error, args ...interface{}) {
 	t.Fatal(text)
 }
 
-// Should no error, should not be error, if error is occured, reported by t.Error()
+// Should not have error, if error is occured, reported by t.Error()
 func (r *Reporter) Should(t testing.TB, err error, args ...interface{}) {
 	t.Helper()
 	if err == nil {
@@ -228,7 +228,7 @@ func (r *Reporter) Should(t testing.TB, err error, args ...interface{}) {
 	t.Error(text)
 }
 
-// Log :
+// Log logs error, if error is occured, logs by t.Log() and return logged message by string
 func (r *Reporter) Log(t testing.TB, err error, args ...interface{}) string {
 	t.Helper()
 	if err == nil {
