@@ -267,12 +267,16 @@ func (r *Reporter) Report(err error, args ...interface{}) (string, error) {
 			return r.ToReport(r, x), nil
 		}
 		return DefaultReporter.ToReport(r, x), nil
-	case fmt.Stringer:
-		return x.String(), nil
-	case error:
-		return x.Error(), nil
 	default:
-		panic(fmt.Sprintf("unexpected type: %T", x))
+		text := fmt.Sprintf("%+v", err)
+		if len(args) == 0 {
+			return text, nil
+		}
+		texts := []string{text}
+		for _, x := range args {
+			texts = append(texts, toString(x))
+		}
+		return strings.Join(texts, ""), nil
 	}
 }
 
@@ -294,11 +298,11 @@ func init() {
 				toString = DefaultReporter.ToString
 			}
 			fmtText := "%s, expected %s, but actual %s"
-			description := fmt.Sprintf(fmtText, name, toString(ng.Expected), toString(ng.Actual))
+			text := fmt.Sprintf(fmtText, name, toString(ng.Expected), toString(ng.Actual))
 			if ng.args == nil {
-				return description
+				return text
 			}
-			texts := []string{description}
+			texts := []string{text}
 			for _, x := range ng.args {
 				texts = append(texts, toString(x))
 			}
