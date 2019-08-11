@@ -16,6 +16,8 @@ func (c *Closer) Close() error {
 }
 
 func TestBind(t *testing.T) {
+	// XXX: copied value is bound, not actual return value.
+
 	t.Run("ok, with closer", func(t *testing.T) {
 		var got Closer
 		defer func() {
