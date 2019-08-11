@@ -5,8 +5,9 @@ import (
 )
 
 type Closer struct {
-	err    error
-	closed bool
+	err     error
+	closed  bool
+	created bool
 }
 
 func (c *Closer) Close() error {
@@ -15,8 +16,10 @@ func (c *Closer) Close() error {
 }
 
 func TestBind(t *testing.T) {
+	// XXX: copied value is bound, not actual return value.
+
 	t.Run("ok, with closer", func(t *testing.T) {
-		var got *Closer
+		var got Closer
 		defer func() {
 			if !got.closed {
 				t.Errorf("expect closed, but not closed")
@@ -24,19 +27,17 @@ func TestBind(t *testing.T) {
 		}()
 
 		setup := func() *Closer {
-			got = &Closer{err: nil}
-			return got
+			return &Closer{created: true, err: nil}
 		}
+		defer Bind(t, &got).Actual(setup()).Teardown()
 
-		var ob interface{}
-		defer Bind(t, &ob).Actual(setup()).Teardown()
-		if _, ok := ob.(*Closer); !ok {
-			t.Fatalf("expect bound, but not bound: %T", ob)
+		if !got.created {
+			t.Errorf("expect created, but not created")
 		}
 	})
 
 	t.Run("ok, with error", func(t *testing.T) {
-		var got *Closer
+		var got Closer
 		defer func() {
 			if !got.closed {
 				t.Errorf("expect closed, but not closed")
@@ -44,19 +45,18 @@ func TestBind(t *testing.T) {
 		}()
 
 		setup := func() (*Closer, error) {
-			got = &Closer{err: nil}
-			return got, nil
+			return &Closer{created: true, err: nil}, nil
 		}
 
-		var ob interface{}
-		defer Bind(t, &ob).ActualWithError(setup()).Teardown()
-		if _, ok := ob.(*Closer); !ok {
-			t.Fatalf("expect bound, but not bound: %T", ob)
+		defer Bind(t, &got).ActualWithError(setup()).Teardown()
+
+		if !got.created {
+			t.Errorf("expect created, but not created")
 		}
 	})
 
 	t.Run("ok, with teardown", func(t *testing.T) {
-		var got *Closer
+		var got Closer
 		defer func() {
 			if !got.closed {
 				t.Errorf("expect closed, but not closed")
@@ -64,18 +64,17 @@ func TestBind(t *testing.T) {
 		}()
 
 		setup := func() (*Closer, func()) {
-			got = &Closer{err: nil}
-			return got, func() { Must(t, got.Close()) }
+			return &Closer{created: true, err: nil}, func() { Must(t, got.Close()) }
 		}
 
-		var ob interface{}
-		defer Bind(t, &ob).ActualWithTeardown(setup()).Teardown()
-		if _, ok := ob.(*Closer); !ok {
-			t.Fatalf("expect bound, but not bound: %T", ob)
+		defer Bind(t, &got).ActualWithTeardown(setup()).Teardown()
+
+		if !got.created {
+			t.Errorf("expect created, but not created")
 		}
 	})
 	t.Run("ok, with error, with teardown", func(t *testing.T) {
-		var got *Closer
+		var got Closer
 		defer func() {
 			if !got.closed {
 				t.Errorf("expect closed, but not closed")
@@ -83,14 +82,12 @@ func TestBind(t *testing.T) {
 		}()
 
 		setup := func() (*Closer, error, func()) {
-			got = &Closer{err: nil}
-			return got, nil, func() { Must(t, got.Close()) }
+			return &Closer{created: true, err: nil}, nil, func() { Must(t, got.Close()) }
 		}
 
-		var ob interface{}
-		defer Bind(t, &ob).ActualWithErrorWithTeardown(setup()).Teardown()
-		if _, ok := ob.(*Closer); !ok {
-			t.Fatalf("expect bound, but not bound: %T", ob)
+		defer Bind(t, &got).ActualWithErrorWithTeardown(setup()).Teardown()
+		if !got.created {
+			t.Errorf("expect created, but not created")
 		}
 	})
 }

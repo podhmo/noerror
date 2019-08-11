@@ -3,24 +3,32 @@ package noerror
 import (
 	"fmt"
 	"io"
+	"reflect"
 	"testing"
 )
 
-// Bind :
-func Bind(t *testing.T, dst *interface{}) *Binder {
+// Bind : (XXX: copied value is bound)
+func Bind(t *testing.T, dst interface{}) *Binder {
+	t.Helper()
+	rv := reflect.ValueOf(dst)
+	if rv.Kind() != reflect.Ptr {
+		Must(t, fmt.Errorf("%T is not pointer", dst))
+	}
 	return &Binder{t: t, ob: dst}
 }
 
 // Binder :
 type Binder struct {
 	t        *testing.T
-	ob       *interface{}
+	ob       interface{}
 	teardown func()
 }
 
 // Actual :
 func (b *Binder) Actual(ob interface{}) *Binder {
-	*b.ob = ob
+	rdst := reflect.ValueOf(b.ob)
+	rsrc := reflect.ValueOf(ob)
+	rdst.Elem().Set(rsrc.Elem())
 	return b
 }
 
@@ -32,7 +40,7 @@ func (b *Binder) ActualWithTeardown(ob interface{}, teardown func()) *Binder {
 
 // ActualWithError :
 func (b *Binder) ActualWithError(ob interface{}, err error) *Binder {
-	*b.ob = ob
+	b.Actual(ob)
 	b.t.Helper()
 	Must(b.t, err)
 	return b
@@ -51,10 +59,10 @@ func (b *Binder) Teardown() {
 		return
 	}
 
-	closer, ok := (*b.ob).(io.Closer)
+	closer, ok := (b.ob).(io.Closer)
 	b.t.Helper()
 	if !ok {
-		Must(b.t, fmt.Errorf("%T is not io.Closer", *b.ob))
+		Must(b.t, fmt.Errorf("%T is not io.Closer", b.ob))
 		return
 	}
 	Must(b.t, closer.Close())
