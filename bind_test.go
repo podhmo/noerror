@@ -62,8 +62,7 @@ func TestBind(t *testing.T) {
 		}()
 
 		setup := func() (*Closer, func()) {
-			got := &Closer{created: true, err: nil}
-			return got, func() { Must(t, got.Close()) }
+			return &Closer{created: true, err: nil}, func() { Must(t, got.Close()) }
 		}
 
 		defer Bind(t, &got).ActualWithTeardown(setup()).Teardown()
@@ -81,8 +80,7 @@ func TestBind(t *testing.T) {
 		}()
 
 		setup := func() (*Closer, error, func()) {
-			got := &Closer{created: true, err: nil}
-			return got, nil, func() { Must(t, got.Close()) }
+			return &Closer{created: true, err: nil}, nil, func() { Must(t, got.Close()) }
 		}
 
 		defer Bind(t, &got).ActualWithErrorWithTeardown(setup()).Teardown()
